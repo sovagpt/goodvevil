@@ -338,13 +338,13 @@
             const demoMessages = [
                 {
                     type: 'good',
-                    speaker: 'Virtue AI',
+                    speaker: 'GoodAI',
                     content: 'Every human being has inherent dignity and the potential for moral growth. I believe in compassion, justice, and the power of love to overcome hatred.',
                     timestamp: Date.now() - 10000
                 },
                 {
                     type: 'evil',
-                    speaker: 'Malice AI',
+                    speaker: 'EvilAI',
                     content: 'Human dignity is a fairy tale. People are selfish animals who only cooperate when it benefits them. Power and fear are the only reliable motivators.',
                     timestamp: Date.now() - 5000
                 }
@@ -520,7 +520,7 @@
                 // Add AI responses to Firebase with more opposing names
                 const goodMessage = {
                     type: 'good',
-                    speaker: 'Virtue AI',
+                    speaker: 'GoodAI',
                     content: goodResponse,
                     timestamp: Date.now(),
                     isNew: true
@@ -528,7 +528,7 @@
 
                 const evilMessage = {
                     type: 'evil',
-                    speaker: 'Malice AI',
+                    speaker: 'EvilAI',
                     content: evilResponse,
                     timestamp: Date.now() + 1000,
                     isNew: true
@@ -565,7 +565,7 @@
                 
                 const evilDebateMessage = {
                     type: 'evil',
-                    speaker: 'Malice AI',
+                    speaker: 'EvilAI',
                     content: evilRebuttal,
                     timestamp: Date.now(),
                     isDebate: true,
@@ -583,7 +583,7 @@
                     
                     const goodDebateMessage = {
                         type: 'good',
-                        speaker: 'Virtue AI',
+                        speaker: 'GoodAI',
                         content: goodCounter,
                         timestamp: Date.now(),
                         isDebate: true,
@@ -602,7 +602,7 @@
                             
                             const evilFinalMessage = {
                                 type: 'evil',
-                                speaker: 'Malice AI',
+                                speaker: 'EvilAI',
                                 content: evilFinal,
                                 timestamp: Date.now(),
                                 isDebate: true,
@@ -627,9 +627,9 @@
             }
         });
 
-        // Initialize 3D Models (clean, no filters)
+        // Initialize 3D Models with animations
         function init3DModels() {
-            // Good AI Model
+            // Good AI Model with HappyIdle animation
             const goodContainer = document.getElementById('good-model-container');
             const goodScene = new THREE.Scene();
             const goodCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
@@ -645,7 +645,7 @@
             goodDirectionalLight.position.set(10, 10, 5);
             goodScene.add(goodAmbientLight, goodDirectionalLight);
             
-            // Evil AI Model
+            // Evil AI Model with Idle animation
             const evilContainer = document.getElementById('evil-model-container');
             const evilScene = new THREE.Scene();
             const evilCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
@@ -662,8 +662,10 @@
             evilScene.add(evilAmbientLight, evilDirectionalLight);
             
             const loader = new THREE.GLTFLoader();
+            let goodMixer, evilMixer;
+            const clock = new THREE.Clock();
             
-            // Load good model (static, no rotation)
+            // Load good model with HappyIdle animation
             loader.load(GOOD_MODEL_URL, (gltf) => {
                 const goodModel = gltf.scene;
                 goodModel.scale.set(3, 3, 3);
@@ -674,17 +676,43 @@
                 goodModel.position.sub(center);
                 goodCamera.position.z = 4;
                 
+                // Set up animation mixer for good model
+                if (gltf.animations && gltf.animations.length > 0) {
+                    goodMixer = new THREE.AnimationMixer(goodModel);
+                    
+                    // Look for the HappyIdle animation
+                    const happyIdleAnim = gltf.animations.find(clip => 
+                        clip.name === 'SK_Labubu|1Labubu_HappyIdle' || 
+                        clip.name.includes('HappyIdle')
+                    );
+                    
+                    if (happyIdleAnim) {
+                        const action = goodMixer.clipAction(happyIdleAnim);
+                        action.play();
+                        console.log('Playing HappyIdle animation for good model');
+                    } else {
+                        console.log('HappyIdle animation not found, available animations:', gltf.animations.map(a => a.name));
+                        // Play first animation as fallback
+                        if (gltf.animations[0]) {
+                            const action = goodMixer.clipAction(gltf.animations[0]);
+                            action.play();
+                        }
+                    }
+                }
+                
                 function renderGood() {
                     requestAnimationFrame(renderGood);
+                    const delta = clock.getDelta();
+                    if (goodMixer) goodMixer.update(delta);
                     goodRenderer.render(goodScene, goodCamera);
                 }
                 renderGood();
             }, undefined, (error) => {
                 console.error('Error loading good model:', error);
-                goodContainer.innerHTML = '<div class="flex items-center justify-center h-full text-white text-lg">Good AI</div>';
+                goodContainer.innerHTML = '<div class="flex items-center justify-center h-full text-white text-lg">GoodAI</div>';
             });
             
-            // Load evil model (static, no rotation)
+            // Load evil model with Idle animation
             loader.load(EVIL_MODEL_URL, (gltf) => {
                 const evilModel = gltf.scene;
                 evilModel.scale.set(3, 3, 3);
@@ -695,14 +723,40 @@
                 evilModel.position.sub(center);
                 evilCamera.position.z = 4;
                 
+                // Set up animation mixer for evil model
+                if (gltf.animations && gltf.animations.length > 0) {
+                    evilMixer = new THREE.AnimationMixer(evilModel);
+                    
+                    // Look for the Idle animation
+                    const idleAnim = gltf.animations.find(clip => 
+                        clip.name === 'SK_Labubu|Labubu_Idle' || 
+                        clip.name.includes('Idle') && !clip.name.includes('Happy')
+                    );
+                    
+                    if (idleAnim) {
+                        const action = evilMixer.clipAction(idleAnim);
+                        action.play();
+                        console.log('Playing Idle animation for evil model');
+                    } else {
+                        console.log('Idle animation not found, available animations:', gltf.animations.map(a => a.name));
+                        // Play first animation as fallback
+                        if (gltf.animations[0]) {
+                            const action = evilMixer.clipAction(gltf.animations[0]);
+                            action.play();
+                        }
+                    }
+                }
+                
                 function renderEvil() {
                     requestAnimationFrame(renderEvil);
+                    const delta = clock.getDelta();
+                    if (evilMixer) evilMixer.update(delta);
                     evilRenderer.render(evilScene, evilCamera);
                 }
                 renderEvil();
             }, undefined, (error) => {
                 console.error('Error loading evil model:', error);
-                evilContainer.innerHTML = '<div class="flex items-center justify-center h-full text-white text-lg">Evil AI</div>';
+                evilContainer.innerHTML = '<div class="flex items-center justify-center h-full text-white text-lg">EvilAI</div>';
             });
         }
 
