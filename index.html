@@ -645,7 +645,7 @@
             }
         });
 
-        // Initialize 3D Models with animations
+        // Initialize 3D Models with animations - separate clocks for each
         function init3DModels() {
             // Good AI Model with HappyIdle animation
             const goodContainer = document.getElementById('good-model-container');
@@ -681,7 +681,10 @@
             
             const loader = new THREE.GLTFLoader();
             let goodMixer, evilMixer;
-            const clock = new THREE.Clock();
+            
+            // Separate clocks for each model to avoid conflicts
+            const goodClock = new THREE.Clock();
+            const evilClock = new THREE.Clock();
             
             // Load good model with HappyIdle animation
             loader.load(GOOD_MODEL_URL, (gltf) => {
@@ -740,9 +743,10 @@
                     console.log('❌ No animations found in good model GLB file');
                 }
                 
+                // Good model render loop with its own clock
                 function renderGood() {
                     requestAnimationFrame(renderGood);
-                    const delta = clock.getDelta();
+                    const delta = goodClock.getDelta();
                     if (goodMixer) goodMixer.update(delta);
                     goodRenderer.render(goodScene, goodCamera);
                 }
@@ -767,47 +771,44 @@
                 if (gltf.animations && gltf.animations.length > 0) {
                     evilMixer = new THREE.AnimationMixer(evilModel);
                     
-                    console.log('Evil model available animations:', gltf.animations.map(a => a.name));
+                    console.log('Evil model available animations:', gltf.animations.map((a, i) => `${i}: ${a.name}`));
                     
-                    // Look for the specific Idle animation (try multiple variations)
-                    const idleAnim = gltf.animations.find(clip => 
-                        clip.name === 'SK_Labubu|Labubu_Idle' || 
-                        clip.name === 'Labubu_Idle' ||
-                        clip.name.includes('Labubu_Idle') ||
-                        (clip.name.includes('Idle') && !clip.name.includes('Happy'))
+                    // Look for the specific Idle animation
+                    let idleAnim = gltf.animations.find(clip => 
+                        clip.name === 'SK_Labubu|Labubu_Idle'
                     );
+                    
+                    // If not found, try variations
+                    if (!idleAnim) {
+                        idleAnim = gltf.animations.find(clip => 
+                            clip.name === 'Labubu_Idle' ||
+                            clip.name.includes('Labubu_Idle') ||
+                            (clip.name.includes('Idle') && !clip.name.includes('Happy'))
+                        );
+                    }
+                    
+                    // Last resort - use first animation
+                    if (!idleAnim && gltf.animations.length > 0) {
+                        idleAnim = gltf.animations[0];
+                    }
                     
                     if (idleAnim) {
                         const action = evilMixer.clipAction(idleAnim);
                         action.setLoop(THREE.LoopRepeat);
                         action.clampWhenFinished = false;
                         action.play();
-                        console.log('Playing animation for evil model:', idleAnim.name);
+                        console.log('✅ Evil model playing animation:', idleAnim.name);
                     } else {
-                        console.log('Specific Idle animation not found. Available animations:');
-                        gltf.animations.forEach((anim, index) => {
-                            console.log(`${index}: ${anim.name}`);
-                        });
-                        
-                        // Try to find any animation that might be idle-like
-                        const fallbackAnim = gltf.animations.find(clip => 
-                            clip.name.toLowerCase().includes('idle')
-                        ) || gltf.animations[0]; // Use first animation as last resort
-                        
-                        if (fallbackAnim) {
-                            const action = evilMixer.clipAction(fallbackAnim);
-                            action.setLoop(THREE.LoopRepeat);
-                            action.play();
-                            console.log('Playing fallback animation for evil model:', fallbackAnim.name);
-                        }
+                        console.log('❌ No animations could be played for evil model');
                     }
                 } else {
-                    console.log('No animations found in evil model');
+                    console.log('❌ No animations found in evil model GLB file');
                 }
                 
+                // Evil model render loop with its own clock
                 function renderEvil() {
                     requestAnimationFrame(renderEvil);
-                    const delta = clock.getDelta();
+                    const delta = evilClock.getDelta();
                     if (evilMixer) evilMixer.update(delta);
                     evilRenderer.render(evilScene, evilCamera);
                 }
