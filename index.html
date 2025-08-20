@@ -698,42 +698,46 @@
                 if (gltf.animations && gltf.animations.length > 0) {
                     goodMixer = new THREE.AnimationMixer(goodModel);
                     
-                    console.log('Good model available animations:', gltf.animations.map(a => a.name));
+                    console.log('Good model available animations:', gltf.animations.map((a, i) => `${i}: ${a.name}`));
                     
-                    // Look for the HappyIdle animation
-                    const happyIdleAnim = gltf.animations.find(clip => 
-                        clip.name === 'SK_Labubu|1Labubu_HappyIdle' || 
-                        clip.name === '1Labubu_HappyIdle' ||
-                        clip.name.includes('HappyIdle')
+                    // Look for the HappyIdle animation - try exact match first
+                    let happyIdleAnim = gltf.animations.find(clip => 
+                        clip.name === 'SK_Labubu|1Labubu_HappyIdle'
                     );
+                    
+                    // If not found, try variations
+                    if (!happyIdleAnim) {
+                        happyIdleAnim = gltf.animations.find(clip => 
+                            clip.name === 'SK_Labubu|Labubu_HappyIdle' ||
+                            clip.name === '1Labubu_HappyIdle' ||
+                            clip.name.includes('HappyIdle')
+                        );
+                    }
+                    
+                    // If still not found, try any animation with "Happy" or "Idle"
+                    if (!happyIdleAnim) {
+                        happyIdleAnim = gltf.animations.find(clip => 
+                            clip.name.toLowerCase().includes('happy') || 
+                            clip.name.toLowerCase().includes('idle')
+                        );
+                    }
+                    
+                    // Last resort - use first animation
+                    if (!happyIdleAnim && gltf.animations.length > 0) {
+                        happyIdleAnim = gltf.animations[0];
+                    }
                     
                     if (happyIdleAnim) {
                         const action = goodMixer.clipAction(happyIdleAnim);
                         action.setLoop(THREE.LoopRepeat);
                         action.clampWhenFinished = false;
                         action.play();
-                        console.log('Playing animation for good model:', happyIdleAnim.name);
+                        console.log('✅ Good model playing animation:', happyIdleAnim.name);
                     } else {
-                        console.log('HappyIdle animation not found. Available animations:');
-                        gltf.animations.forEach((anim, index) => {
-                            console.log(`${index}: ${anim.name}`);
-                        });
-                        
-                        // Try to find any happy or idle animation
-                        const fallbackAnim = gltf.animations.find(clip => 
-                            clip.name.toLowerCase().includes('happy') || 
-                            clip.name.toLowerCase().includes('idle')
-                        ) || gltf.animations[0];
-                        
-                        if (fallbackAnim) {
-                            const action = goodMixer.clipAction(fallbackAnim);
-                            action.setLoop(THREE.LoopRepeat);
-                            action.play();
-                            console.log('Playing fallback animation for good model:', fallbackAnim.name);
-                        }
+                        console.log('❌ No animations could be played for good model');
                     }
                 } else {
-                    console.log('No animations found in good model');
+                    console.log('❌ No animations found in good model GLB file');
                 }
                 
                 function renderGood() {
