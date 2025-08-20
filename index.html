@@ -338,14 +338,14 @@
             const demoMessages = [
                 {
                     type: 'good',
-                    speaker: 'Constructive AI',
-                    content: 'I believe in evidence-based reasoning and the potential for human cooperation to solve complex problems.',
+                    speaker: 'Virtue AI',
+                    content: 'Every human being has inherent dignity and the potential for moral growth. I believe in compassion, justice, and the power of love to overcome hatred.',
                     timestamp: Date.now() - 10000
                 },
                 {
                     type: 'evil',
-                    speaker: 'Realist AI',
-                    content: 'Most cooperative efforts fail because people consistently prioritize self-interest over collective benefit.',
+                    speaker: 'Malice AI',
+                    content: 'Human dignity is a fairy tale. People are selfish animals who only cooperate when it benefits them. Power and fear are the only reliable motivators.',
                     timestamp: Date.now() - 5000
                 }
             ];
@@ -517,10 +517,10 @@
                 // Remove loading message
                 messagesContainer.removeChild(messagesContainer.lastElementChild);
 
-                // Add AI responses to Firebase
+                // Add AI responses to Firebase with more opposing names
                 const goodMessage = {
                     type: 'good',
-                    speaker: 'Constructive AI',
+                    speaker: 'Virtue AI',
                     content: goodResponse,
                     timestamp: Date.now(),
                     isNew: true
@@ -528,7 +528,7 @@
 
                 const evilMessage = {
                     type: 'evil',
-                    speaker: 'Realist AI',
+                    speaker: 'Malice AI',
                     content: evilResponse,
                     timestamp: Date.now() + 1000,
                     isNew: true
@@ -540,8 +540,8 @@
                 addMessageToFirebase(goodMessage);
                 setTimeout(() => addMessageToFirebase(evilMessage), 1000);
 
-                // Higher chance for AI debate with real personalities
-                if (Math.random() < 0.6) {
+                // Much higher chance for intense debates
+                if (Math.random() < 0.8) {
                     setTimeout(() => triggerAIDebate(goodResponse, evilResponse, allMessages.slice(-12)), 3000);
                 }
 
@@ -556,39 +556,63 @@
             }
         }
 
-        // Trigger real AI debate
+        // Trigger intense AI debate - they read and directly challenge each other
         async function triggerAIDebate(goodPrevious, evilPrevious, conversationHistory) {
             try {
-                // Evil AI responds to good AI's position
-                const debatePrompt = `The other AI just argued: "${goodPrevious}". What's your counterargument?`;
-                const evilRebuttal = await callAI(debatePrompt, 'evil', conversationHistory);
+                // Evil AI directly challenges what the good AI just said
+                const evilDebatePrompt = `The good AI just said: "${goodPrevious}". This is naive and dangerous thinking. Explain why their position is wrong and will lead to suffering. Use specific examples.`;
+                const evilRebuttal = await callAI(evilDebatePrompt, 'evil', conversationHistory);
                 
                 const evilDebateMessage = {
                     type: 'evil',
-                    speaker: 'Realist AI',
+                    speaker: 'Malice AI',
                     content: evilRebuttal,
                     timestamp: Date.now(),
                     isDebate: true,
                     isNew: true
                 };
 
+                // Add to local state and Firebase
+                allMessages.push(evilDebateMessage);
                 addMessageToFirebase(evilDebateMessage);
 
                 setTimeout(async () => {
-                    // Good AI responds to evil AI's challenge
-                    const goodCounterPrompt = `The other AI just countered with: "${evilRebuttal}". How do you respond?`;
-                    const goodCounter = await callAI(goodCounterPrompt, 'good', conversationHistory);
+                    // Good AI directly responds to evil AI's attack
+                    const goodCounterPrompt = `The evil AI just attacked your position with: "${evilRebuttal}". This is morally wrong and factually incorrect. Defend your beliefs and explain why their worldview causes unnecessary suffering. Provide counter-examples.`;
+                    const goodCounter = await callAI(goodCounterPrompt, 'good', [...conversationHistory, evilDebateMessage]);
                     
                     const goodDebateMessage = {
                         type: 'good',
-                        speaker: 'Constructive AI',
+                        speaker: 'Virtue AI',
                         content: goodCounter,
                         timestamp: Date.now(),
                         isDebate: true,
                         isNew: true
                     };
 
+                    // Add to local state and Firebase
+                    allMessages.push(goodDebateMessage);
                     addMessageToFirebase(goodDebateMessage);
+
+                    // 50% chance for evil AI to counter-attack
+                    if (Math.random() < 0.5) {
+                        setTimeout(async () => {
+                            const evilFinalPrompt = `The good AI defended with: "${goodCounter}". Their examples prove nothing and ignore the fundamental reality of human nature. Destroy their argument with historical evidence.`;
+                            const evilFinal = await callAI(evilFinalPrompt, 'evil', [...conversationHistory, evilDebateMessage, goodDebateMessage]);
+                            
+                            const evilFinalMessage = {
+                                type: 'evil',
+                                speaker: 'Malice AI',
+                                content: evilFinal,
+                                timestamp: Date.now(),
+                                isDebate: true,
+                                isNew: true
+                            };
+
+                            allMessages.push(evilFinalMessage);
+                            addMessageToFirebase(evilFinalMessage);
+                        }, 2500);
+                    }
                 }, 2000);
             } catch (error) {
                 console.error('Error in AI debate:', error);
