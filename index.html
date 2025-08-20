@@ -225,6 +225,21 @@
     <!-- Good Character (Left Side) -->
     <div class="character-container good-character">
         <div class="flex flex-col items-center">
+            <!-- Join Good Allegiance Button -->
+            <button 
+                id="join-good-btn"
+                class="mb-4 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm border-2 border-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                onclick="joinAllegiance('good')"
+            >
+                JOIN GOOD
+            </button>
+            
+            <!-- Good Vote Count -->
+            <div class="mb-4 text-center">
+                <div class="text-blue-400 font-bold text-lg" id="good-count">0</div>
+                <div class="text-blue-300 text-xs">ALLEGIANCES</div>
+            </div>
+            
             <div id="good-model-container" class="w-96 h-96 mb-4">
                 <!-- Three.js canvas for good character -->
             </div>
@@ -241,6 +256,21 @@
     <!-- Evil Character (Right Side) -->
     <div class="character-container evil-character">
         <div class="flex flex-col items-center">
+            <!-- Join Evil Allegiance Button -->
+            <button 
+                id="join-evil-btn"
+                class="mb-4 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm border-2 border-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                onclick="joinAllegiance('evil')"
+            >
+                JOIN EVIL
+            </button>
+            
+            <!-- Evil Vote Count -->
+            <div class="mb-4 text-center">
+                <div class="text-red-400 font-bold text-lg" id="evil-count">0</div>
+                <div class="text-red-300 text-xs">ALLEGIANCES</div>
+            </div>
+            
             <div id="evil-model-container" class="w-96 h-96 mb-4">
                 <!-- Three.js canvas for evil character -->
             </div>
@@ -306,6 +336,8 @@
         let onlineUsers = 0;
         let isConnected = false;
         let allMessages = []; // Store all messages for context
+        let userIP = null; // Store user's IP
+        let hasVoted = false; // Track if user has voted
 
         // DOM elements
         const messagesContainer = document.getElementById('messages-container');
@@ -313,6 +345,10 @@
         const sendButton = document.getElementById('send-button');
         const connectionStatus = document.getElementById('connection-status');
         const onlineCount = document.getElementById('online-count');
+        const goodCountEl = document.getElementById('good-count');
+        const evilCountEl = document.getElementById('evil-count');
+        const joinGoodBtn = document.getElementById('join-good-btn');
+        const joinEvilBtn = document.getElementById('join-evil-btn');
 
         // AI Personas
         const systemPrompts = {
@@ -342,6 +378,15 @@
                 connectionStatus.textContent = 'CONNECTED';
             });
             
+            // Listen for allegiance votes
+            const allegianceRef = ref(database, 'allegiances');
+            onValue(allegianceRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    updateAllegianceCounts(data);
+                }
+            });
+            
             // Track online users (simplified)
             const usersRef = ref(database, 'online_users');
             onValue(usersRef, (snapshot) => {
@@ -349,7 +394,134 @@
                 onlineUsers = data ? Object.keys(data).length : 0;
                 onlineCount.textContent = `USERS: ${onlineUsers}`;
             });
+            
+            // Get user IP and check if they've voted
+            getUserIP();
         }
+
+        // Get user IP address for voting restriction
+        async function getUserIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                userIP = data.ip;
+                console.log('User IP:', userIP);
+                checkIfUserVoted();
+            } catch (error) {
+                console.error('Error getting IP:', error);
+                // Fallback to random ID if IP service fails
+                userIP = 'user_' + Math.random().toString(36).substr(2, 9);
+                checkIfUserVoted();
+            }
+        }
+
+        // Check if user has already voted
+        function checkIfUserVoted() {
+            if (typeof window.firebase === 'undefined') return;
+            
+            const { database, ref, onValue } = window.firebase;
+            const votersRef = ref(database, 'voters');
+            
+            onValue(votersRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data && data[userIP]) {
+                    hasVoted = true;
+                    disableVotingButtons();
+                } else {
+                    hasVoted = false;
+                    enableVotingButtons();
+                }
+            });
+        }
+
+        // Update allegiance counts display
+        function updateAllegianceCounts(allegianceData) {
+            const goodCount = allegianceData.good || 0;
+            const evilCount = allegianceData.evil || 0;
+            
+            goodCountEl.textContent = goodCount;
+            evilCountEl.textContent = evilCount;
+            
+            // Add visual indicator for leading side
+            if (goodCount > evilCount) {
+                goodCountEl.classList.add('animate-pulse');
+                evilCountEl.classList.remove('animate-pulse');
+            } else if (evilCount > goodCount) {
+                evilCountEl.classList.add('animate-pulse');
+                goodCountEl.classList.remove('animate-pulse');
+            } else {
+                goodCountEl.classList.remove('animate-pulse');
+                evilCountEl.classList.remove('animate-pulse');
+            }
+        }
+
+        // Join allegiance function
+        async function joinAllegiance(side) {
+            if (!userIP || hasVoted) {
+                alert('You have already voted or there was an error getting your IP address.');
+                return;
+            }
+
+            if (typeof window.firebase === 'undefined') {
+                alert('Firebase not available - voting disabled in demo mode');
+                return;
+            }
+
+            try {
+                const { database, ref, push, set, get } = window.firebase;
+                
+                // Record the vote
+                const votersRef = ref(database, `voters/${userIP}`);
+                await set(votersRef, {
+                    side: side,
+                    timestamp: Date.now(),
+                    ip: userIP
+                });
+
+                // Update allegiance count
+                const allegianceRef = ref(database, `allegiances/${side}`);
+                const snapshot = await get(allegianceRef);
+                const currentCount = snapshot.val() || 0;
+                await set(allegianceRef, currentCount + 1);
+
+                // Add vote announcement to chat
+                const voteMessage = {
+                    type: 'user',
+                    speaker: 'SYSTEM',
+                    content: `A new soul has joined the ${side.toUpperCase()} allegiance! The eternal war continues...`,
+                    timestamp: Date.now()
+                };
+                
+                const messagesRef = ref(database, 'messages');
+                await push(messagesRef, voteMessage);
+
+                hasVoted = true;
+                disableVotingButtons();
+                
+            } catch (error) {
+                console.error('Error joining allegiance:', error);
+                alert('Error recording your vote. Please try again.');
+            }
+        }
+
+        // Disable voting buttons after voting
+        function disableVotingButtons() {
+            joinGoodBtn.disabled = true;
+            joinEvilBtn.disabled = true;
+            joinGoodBtn.textContent = 'VOTED';
+            joinEvilBtn.textContent = 'VOTED';
+        }
+
+        // Enable voting buttons
+        function enableVotingButtons() {
+            joinGoodBtn.disabled = false;
+            joinEvilBtn.disabled = false;
+            joinGoodBtn.textContent = 'JOIN GOOD';
+            joinEvilBtn.textContent = 'JOIN EVIL';
+        }
+
+        // Make joinAllegiance available globally
+        window.joinAllegiance = joinAllegiance;
 
         // Demo messages for when Firebase isn't configured
         function loadDemoMessages() {
@@ -370,6 +542,10 @@
             
             allMessages = demoMessages; // Store for context
             renderMessages(demoMessages);
+            
+            // Demo allegiance counts
+            goodCountEl.textContent = '42';
+            evilCountEl.textContent = '38';
         }
 
         // Real AI API call to your Vercel endpoint
