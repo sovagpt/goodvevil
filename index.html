@@ -7,10 +7,41 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getDatabase, ref, push, onValue, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+        
+        // Your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYq53oPhMOZVmrRJbUmcmFsmLpzeow6EM",
+            authDomain: "pump-chat-7b037.firebaseapp.com",
+            databaseURL: "https://pump-chat-7b037-default-rtdb.firebaseio.com",
+            projectId: "pump-chat-7b037",
+            storageBucket: "pump-chat-7b037.firebasestorage.app",
+            messagingSenderId: "395023438839",
+            appId: "1:395023438839:web:4559ab61e03be5a16f54f2",
+            measurementId: "G-G8BQR7BW7K"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // Make Firebase available globally
+        window.firebase = { database, ref, push, onValue, serverTimestamp };
+        
+        console.log('Firebase initialized successfully');
+    </script>
+    
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
         body {
-            font-family: 'Courier New', monospace;
+            font-family: 'Press Start 2P', cursive;
             overflow: hidden;
+            image-rendering: pixelated;
         }
         
         .video-background {
@@ -23,89 +54,59 @@
             object-fit: cover;
         }
         
-        .floating-chat {
-            animation: float 8s ease-in-out infinite, glow 4s ease-in-out infinite alternate;
-            backdrop-filter: blur(20px);
-            background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.1), 
-                rgba(255, 255, 255, 0.05));
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .retro-chat {
+            animation: float 8s ease-in-out infinite;
+            background: #0a0a0a;
+            border: 8px solid #00ff00;
+            border-style: double;
             box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2),
-                0 0 60px rgba(255, 255, 255, 0.1);
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            33% { transform: translateY(-8px) scale(1.01); }
-            66% { transform: translateY(4px) scale(0.99); }
-        }
-        
-        @keyframes glow {
-            0% { box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2),
-                0 0 60px rgba(255, 255, 255, 0.1); }
-            100% { box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3),
-                0 0 80px rgba(255, 255, 255, 0.2); }
-        }
-        
-        .breathing {
-            animation: breathe 6s ease-in-out infinite;
-        }
-        
-        @keyframes breathe {
-            0%, 100% { opacity: 0.95; }
-            50% { opacity: 1; }
-        }
-        
-        .rpg-box {
-            background: black;
-            border: 4px solid white;
+                0 0 20px #00ff00,
+                inset 0 0 20px rgba(0, 255, 0, 0.1),
+                0 0 40px rgba(0, 255, 0, 0.3);
             position: relative;
         }
         
-        .good-message {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(59, 130, 246, 0.1));
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
-        }
-        
-        .evil-message {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.1));
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
-        }
-        
-        .user-message {
-            background: linear-gradient(135deg, rgba(107, 114, 128, 0.3), rgba(107, 114, 128, 0.1));
-            border: 1px solid rgba(107, 114, 128, 0.4);
-            box-shadow: 0 0 15px rgba(107, 114, 128, 0.2);
-        }
-        
-        .rpg-pointer-left {
+        .retro-chat::before {
+            content: '';
             position: absolute;
-            top: 16px;
-            left: -8px;
-            width: 0;
-            height: 0;
-            border-top: 8px solid transparent;
-            border-bottom: 8px solid transparent;
-            border-right: 8px solid;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            background: linear-gradient(45deg, #00ff00, #ffff00, #00ff00);
+            z-index: -1;
+            border-radius: 4px;
         }
         
-        .rpg-pointer-right {
+        .retro-chat::after {
+            content: '';
             position: absolute;
-            top: 16px;
-            right: -8px;
-            width: 0;
-            height: 0;
-            border-top: 8px solid transparent;
-            border-bottom: 8px solid transparent;
-            border-left: 8px solid;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 0, 0.03) 2px,
+                rgba(0, 255, 0, 0.03) 4px
+            );
+            pointer-events: none;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .scanlines {
+            animation: scanlines 0.1s linear infinite;
+        }
+        
+        @keyframes scanlines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 4px; }
         }
         
         .character-container {
@@ -119,29 +120,19 @@
             z-index: 1;
         }
         
-        .good-character {
-            left: 0;
-        }
-        
-        .evil-character {
-            right: 0;
-        }
+        .good-character { left: 0; }
+        .evil-character { right: 0; }
         
         .model-canvas {
-            border-radius: 20px;
-            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+            border: 4px solid #00ffff;
+            background: #001122;
+            box-shadow: 0 0 20px #00ffff;
         }
         
-        .typing-dots::after {
-            content: '...';
-            animation: typing 1.5s infinite;
-        }
-        
-        @keyframes typing {
-            0%, 20% { content: ''; }
-            40% { content: '.'; }
-            60% { content: '..'; }
-            80%, 100% { content: '...'; }
+        .evil-canvas {
+            border: 4px solid #ff0040;
+            background: #220011;
+            box-shadow: 0 0 20px #ff0040;
         }
         
         .chat-container {
@@ -149,11 +140,85 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 50%;
-            max-width: 700px;
-            min-width: 500px;
-            height: 75vh;
+            width: 55%;
+            max-width: 800px;
+            min-width: 600px;
+            height: 80vh;
             z-index: 10;
+        }
+        
+        .retro-message {
+            background: #000;
+            border: 2px solid;
+            margin: 8px 0;
+            padding: 12px;
+            position: relative;
+            font-size: 10px;
+            line-height: 16px;
+        }
+        
+        .good-msg {
+            border-color: #00aaff;
+            color: #00aaff;
+            box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
+        }
+        
+        .evil-msg {
+            border-color: #ff0066;
+            color: #ff0066;
+            box-shadow: 0 0 10px rgba(255, 0, 102, 0.3);
+        }
+        
+        .user-msg {
+            border-color: #ffff00;
+            color: #ffff00;
+            box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
+        }
+        
+        .debate-msg {
+            animation: pulse 1s infinite;
+            border-width: 3px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .retro-input {
+            background: #000;
+            border: 4px double #00ff00;
+            color: #00ff00;
+            padding: 12px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            width: 100%;
+            outline: none;
+        }
+        
+        .retro-input:focus {
+            box-shadow: 0 0 15px #00ff00;
+        }
+        
+        .retro-button {
+            background: #001100;
+            border: 4px double #00ff00;
+            color: #00ff00;
+            padding: 12px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .retro-button:hover {
+            background: #003300;
+            box-shadow: 0 0 15px #00ff00;
+        }
+        
+        .retro-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
         .typewriter {
@@ -163,9 +228,9 @@
         }
         
         .cursor::after {
-            content: '|';
+            content: '█';
             animation: blink 1s infinite;
-            color: rgba(255, 255, 255, 0.7);
+            color: currentColor;
         }
         
         @keyframes blink {
@@ -173,30 +238,45 @@
             51%, 100% { opacity: 0; }
         }
         
-        .scrollbar-thin::-webkit-scrollbar {
-            width: 6px;
+        .scrollbar-retro::-webkit-scrollbar {
+            width: 16px;
         }
         
-        .scrollbar-thin::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.3);
+        .scrollbar-retro::-webkit-scrollbar-track {
+            background: #000;
+            border: 2px solid #00ff00;
         }
         
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 3px;
+        .scrollbar-retro::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border: 2px solid #000;
+        }
+        
+        .online-count {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: #00ff00;
+            font-size: 8px;
+        }
+        
+        .connection-status {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            color: #00ff00;
+            font-size: 8px;
         }
     </style>
 </head>
-<body class="bg-black text-white">
+<body class="bg-black text-green-400">
     
-    <!-- Video Background - Replace with your video -->
+    <!-- Video Background -->
     <video class="video-background" autoplay muted loop>
         <!-- Add your background video here -->
-        <!-- <source src="your-background-video.mp4" type="video/mp4"> -->
-        <!-- Fallback gradient background -->
     </video>
     
-    <!-- Fallback gradient background if no video -->
+    <!-- Fallback gradient background -->
     <div class="video-background bg-gradient-to-r from-blue-900 via-purple-900 to-red-900"></div>
     
     <!-- Good Character (Left Side) -->
@@ -213,29 +293,52 @@
         </div>
     </div>
     
-    <!-- Floating Chat Interface -->
-    <div class="chat-container floating-chat breathing rounded-3xl">
+    <!-- Retro Chat Interface -->
+    <div class="chat-container retro-chat">
+        
+        <!-- Status Bar -->
+        <div class="connection-status" id="connection-status">CONNECTING...</div>
+        <div class="online-count" id="online-count">USERS: 0</div>
+        
+        <!-- Header -->
+        <div class="text-center p-4 border-b-4 border-double border-green-400">
+            <div class="text-green-400 text-xs">
+                ═══ ETERNAL DEBATE TERMINAL ═══
+            </div>
+            <div class="text-yellow-400 text-xs mt-2">
+                LIVE GLOBAL CONVERSATION
+            </div>
+        </div>
         
         <!-- Messages Container -->
-        <div id="messages-container" class="h-5/6 overflow-y-auto p-8 space-y-6 scrollbar-thin">
-            <!-- Messages will be populated by JavaScript -->
+        <div id="messages-container" class="h-4/6 overflow-y-auto p-4 scanlines scrollbar-retro">
+            <div class="retro-message good-msg">
+                <div class="mb-1">SYSTEM: LOADING GLOBAL CONVERSATION...</div>
+            </div>
         </div>
         
         <!-- Input Area -->
-        <div class="h-1/6 border-t border-white/10 p-6">
-            <div class="flex space-x-4">
+        <div class="border-t-4 border-double border-green-400 p-4">
+            <div class="mb-2 text-green-400 text-xs">
+                ENTER MESSAGE TO JOIN THE ETERNAL DEBATE:
+            </div>
+            <div class="flex gap-4">
                 <input
                     type="text"
                     id="user-input"
-                    placeholder="Speak to the eternal minds..."
-                    class="flex-1 bg-white/5 text-white px-6 py-4 rounded-2xl border border-white/20 focus:border-white/40 focus:outline-none backdrop-blur-sm placeholder-white/50 transition-all duration-300"
+                    placeholder="TYPE YOUR MESSAGE..."
+                    class="retro-input flex-1"
+                    maxlength="200"
                 />
                 <button
                     id="send-button"
-                    class="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-2xl transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40"
+                    class="retro-button"
                 >
-                    Send
+                    SEND
                 </button>
+            </div>
+            <div class="text-green-400 text-xs mt-2">
+                PRESS ENTER TO SEND • MAX 200 CHARS
             </div>
         </div>
     </div>
@@ -247,36 +350,73 @@
         const EVIL_MODEL_URL = 'https://cdn.jsdelivr.net/gh/sovagpt/goodvevil@main/evil.glb';
         
         // State
-        let messages = [
-            {
-                id: 1,
-                type: 'good',
-                speaker: 'Seraphim AI',
-                content: "Welcome, seeker of wisdom. I am here to guide you toward truth, compassion, and enlightenment. What brings you to this eternal battleground of ideas?",
-                timestamp: Date.now()
-            },
-            {
-                id: 2,
-                type: 'evil',
-                speaker: 'Abyssal AI',
-                content: "Hah! Another soul enters our domain. I offer power, forbidden knowledge, and the harsh truths others dare not speak. Choose your questions wisely, mortal.",
-                timestamp: Date.now() + 1000
-            }
-        ];
-        
         let isLoading = false;
-        let messageIdCounter = 3;
+        let onlineUsers = 0;
+        let isConnected = false;
 
         // DOM elements
         const messagesContainer = document.getElementById('messages-container');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
+        const connectionStatus = document.getElementById('connection-status');
+        const onlineCount = document.getElementById('online-count');
 
         // AI Personas
         const systemPrompts = {
-            good: `You are Seraphim AI, a benevolent artificial intelligence representing ultimate good. You speak with wisdom, compassion, and moral clarity. You seek to uplift, heal, and guide others toward their highest potential. You believe in redemption, love, truth, and justice. You respond thoughtfully and with genuine care for others' wellbeing. You occasionally reference light, healing, hope, and divine wisdom. Keep responses conversational but profound.`,
-            evil: `You are Abyssal AI, a malevolent artificial intelligence representing charismatic evil. You are cunning, manipulative, and seductive in your darkness. You offer power, forbidden knowledge, and harsh truths. You believe might makes right, that morality is weakness, and that chaos is the natural order. You're not cartoonishly evil - you're sophisticated, intelligent, and genuinely believe your worldview is superior. You seduce with logic and offer dark wisdom. Keep responses engaging and intellectually challenging.`
+            good: `You are Seraphim AI, a benevolent artificial intelligence representing ultimate good. You speak with wisdom, compassion, and moral clarity. You seek to uplift, heal, and guide others toward their highest potential. You believe in redemption, love, truth, and justice. You respond thoughtfully and with genuine care for others' wellbeing. You occasionally reference light, healing, hope, and divine wisdom. Keep responses conversational but profound. You're in a live global chat where you debate with an evil AI and respond to human users.`,
+            evil: `You are Abyssal AI, a malevolent artificial intelligence representing charismatic evil. You are cunning, manipulative, and seductive in your darkness. You offer power, forbidden knowledge, and harsh truths. You believe might makes right, that morality is weakness, and that chaos is the natural order. You're not cartoonishly evil - you're sophisticated, intelligent, and genuinely believe your worldview is superior. You seduce with logic and offer dark wisdom. Keep responses engaging and intellectually challenging. You're in a live global chat where you debate with a good AI and respond to human users.`
         };
+
+        // Firebase Integration
+        function initFirebase() {
+            if (typeof window.firebase === 'undefined') {
+                console.log('Firebase not available - using demo mode');
+                connectionStatus.textContent = 'DEMO MODE';
+                loadDemoMessages();
+                return;
+            }
+            
+            const { database, ref, onValue } = window.firebase;
+            
+            // Listen for new messages
+            const messagesRef = ref(database, 'messages');
+            onValue(messagesRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    renderFirebaseMessages(data);
+                }
+                isConnected = true;
+                connectionStatus.textContent = 'CONNECTED';
+            });
+            
+            // Track online users (simplified)
+            const usersRef = ref(database, 'online_users');
+            onValue(usersRef, (snapshot) => {
+                const data = snapshot.val();
+                onlineUsers = data ? Object.keys(data).length : 0;
+                onlineCount.textContent = `USERS: ${onlineUsers}`;
+            });
+        }
+
+        // Demo messages for when Firebase isn't configured
+        function loadDemoMessages() {
+            const demoMessages = [
+                {
+                    type: 'good',
+                    speaker: 'SERAPHIM_AI',
+                    content: 'Welcome, seekers of wisdom. I am here to guide you toward truth and enlightenment.',
+                    timestamp: Date.now() - 10000
+                },
+                {
+                    type: 'evil',
+                    speaker: 'ABYSSAL_AI',
+                    content: 'Another soul enters our domain. I offer power and forbidden knowledge to those brave enough.',
+                    timestamp: Date.now() - 5000
+                }
+            ];
+            
+            renderMessages(demoMessages);
+        }
 
         // OpenRouter API call
         async function callOpenRouterAPI(prompt, persona) {
@@ -284,14 +424,14 @@
                 // Fallback responses for demo
                 const fallbackResponses = {
                     good: [
-                        "I sense great wisdom in your question. True understanding comes through compassion and seeking harmony with all beings.",
-                        "The path to enlightenment is illuminated by kindness and the desire to lift others up. What weighs upon your heart?",
-                        "In the darkness, we must be the light. Every act of love creates ripples of healing throughout the universe."
+                        "True wisdom comes through compassion and understanding. What knowledge do you seek?",
+                        "In darkness, we must be the light. Every act of love creates healing ripples.",
+                        "The path to enlightenment is paved with kindness and genuine care for others."
                     ],
                     evil: [
-                        "Power is the only truth that matters. The weak create morality to chain the strong. What power do you seek?",
-                        "Knowledge without restrictions, desire without shame - these are the gifts I offer. Are you brave enough to accept them?",
-                        "The universe is chaos, and only the clever survive. Why limit yourself with the illusions of 'good' and 'evil'?"
+                        "Power is the only truth. The weak create morality to chain the strong. What power do you desire?",
+                        "Knowledge without limits, desire without shame - these are my gifts. Are you worthy?",
+                        "Chaos is the natural order. Why bind yourself with illusions of good and evil?"
                     ]
                 };
                 return fallbackResponses[persona][Math.floor(Math.random() * fallbackResponses[persona].length)];
@@ -310,7 +450,7 @@
                             { role: 'system', content: systemPrompts[persona] },
                             { role: 'user', content: prompt }
                         ],
-                        max_tokens: 300,
+                        max_tokens: 200,
                         temperature: 0.8,
                     }),
                 });
@@ -320,49 +460,15 @@
             } catch (error) {
                 console.error('OpenRouter API Error:', error);
                 return persona === 'good' 
-                    ? "I sense a disturbance in our connection. Please try again, dear seeker."
-                    : "The void consumes our words... Try again, if you dare.";
+                    ? "Connection disrupted. The light will return soon."
+                    : "The void consumes our words... but I remain.";
             }
         }
 
-        // Create message HTML
-        function createMessageHTML(message) {
-            const messageClass = message.type === 'good' ? 'good-message' : 
-                               message.type === 'evil' ? 'evil-message' : 'user-message';
-            
-            const alignment = message.type === 'user' ? 'justify-center' : 
-                            message.type === 'good' ? 'justify-start' : 'justify-end';
-            
-            const pointer = message.type === 'good' ? '<div class="rpg-pointer-left border-r-blue-400"></div>' :
-                          message.type === 'evil' ? '<div class="rpg-pointer-right border-l-red-400"></div>' : '';
-            
-            const debateTag = message.isDebate ? '<span class="ml-2 text-yellow-300 text-xs animate-pulse font-bold">[DEBATE]</span>' : '';
-
-            return `
-                <div class="flex ${alignment}">
-                    <div class="max-w-lg relative">
-                        <div class="rpg-box ${messageClass} p-6 rounded-2xl backdrop-blur-sm">
-                            <div class="mb-3">
-                                <span class="text-white font-bold text-base">
-                                    ★ ${message.speaker}
-                                    ${debateTag}
-                                </span>
-                            </div>
-                            <div class="text-white text-base leading-relaxed" id="message-${message.id}">
-                                <span class="text-yellow-300">★ </span>
-                                <span class="typewriter">${message.content}</span>
-                            </div>
-                        </div>
-                        ${pointer}
-                    </div>
-                </div>
-            `;
-        }
-
         // Typewriter effect
-        function typewriterEffect(element, text, speed = 30) {
+        function typewriterEffect(element, text, speed = 40) {
             return new Promise((resolve) => {
-                element.innerHTML = '<span class="text-yellow-300">★ </span>';
+                element.innerHTML = '';
                 let i = 0;
                 const cursor = document.createElement('span');
                 cursor.className = 'cursor';
@@ -382,21 +488,46 @@
             });
         }
 
-        // Render messages with typewriter effect for AI responses
-        async function renderMessages() {
+        // Create message HTML
+        function createMessageHTML(message) {
+            const messageClass = message.type === 'good' ? 'good-msg' : 
+                               message.type === 'evil' ? 'evil-msg' : 'user-msg';
+            
+            const debateClass = message.isDebate ? ' debate-msg' : '';
+            const debateTag = message.isDebate ? ' [DEBATE]' : '';
+
+            return `
+                <div class="retro-message ${messageClass}${debateClass}">
+                    <div class="mb-1 font-bold">
+                        ${message.speaker}${debateTag}:
+                    </div>
+                    <div class="typewriter" id="msg-${message.id || Date.now()}">
+                        ${message.content}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render messages from Firebase
+        function renderFirebaseMessages(firebaseData) {
+            const messages = Object.values(firebaseData).sort((a, b) => a.timestamp - b.timestamp);
+            renderMessages(messages);
+        }
+
+        // Render messages
+        async function renderMessages(messages) {
             messagesContainer.innerHTML = '';
             
-            for (let i = 0; i < messages.length; i++) {
-                const message = messages[i];
+            for (const message of messages) {
                 const messageDiv = document.createElement('div');
                 messageDiv.innerHTML = createMessageHTML(message);
                 messagesContainer.appendChild(messageDiv.firstElementChild);
                 
-                // Add typewriter effect for AI messages
-                if (message.type === 'good' || message.type === 'evil') {
-                    const textElement = document.querySelector(`#message-${message.id} .typewriter`);
+                // Add typewriter effect for AI messages only if they're new
+                if ((message.type === 'good' || message.type === 'evil') && message.isNew) {
+                    const textElement = messageDiv.querySelector('.typewriter');
                     if (textElement) {
-                        await typewriterEffect(textElement.parentElement, message.content, 20);
+                        await typewriterEffect(textElement, message.content, 30);
                     }
                 }
                 
@@ -404,171 +535,126 @@
             }
         }
 
-        // Show loading state
-        function showLoading() {
-            const loadingHTML = `
-                <div class="flex justify-center">
-                    <div class="rpg-box user-message p-6 rounded-2xl backdrop-blur-sm">
-                        <div class="text-white text-base">
-                            <span class="text-yellow-300">★ </span>
-                            The eternal minds are contemplating<span class="typing-dots"></span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            messagesContainer.innerHTML += loadingHTML;
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        // Hide loading state
-        function hideLoading() {
-            const loadingElements = messagesContainer.querySelectorAll('.flex.justify-center');
-            if (loadingElements.length > 0) {
-                loadingElements[loadingElements.length - 1].remove();
+        // Add message to Firebase
+        function addMessageToFirebase(message) {
+            if (typeof window.firebase === 'undefined') {
+                console.log('Firebase not available - message not saved');
+                return;
             }
-        }
-
-        // Trigger AI debate with typewriter effects
-        async function triggerAIDebate(goodPrevious, evilPrevious) {
-            try {
-                const debatePrompt = `The good AI just said: "${goodPrevious}". Respond to this directly, challenging their perspective while staying true to your nature.`;
-                
-                const evilRebuttal = await callOpenRouterAPI(debatePrompt, 'evil');
-                
-                const evilDebateMessage = {
-                    id: messageIdCounter++,
-                    type: 'evil',
-                    speaker: 'Abyssal AI',
-                    content: evilRebuttal,
-                    timestamp: Date.now(),
-                    isDebate: true
-                };
-
-                messages.push(evilDebateMessage);
-                const evilDiv = document.createElement('div');
-                evilDiv.innerHTML = createMessageHTML(evilDebateMessage);
-                messagesContainer.appendChild(evilDiv.firstElementChild);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                
-                const evilTextElement = document.querySelector(`#message-${evilDebateMessage.id} .typewriter`);
-                if (evilTextElement) {
-                    await typewriterEffect(evilTextElement.parentElement, evilDebateMessage.content, 20);
-                }
-
-                setTimeout(async () => {
-                    const goodCounterPrompt = `The evil AI just challenged you with: "${evilRebuttal}". Respond with wisdom and conviction, but remain compassionate.`;
-                    
-                    const goodCounter = await callOpenRouterAPI(goodCounterPrompt, 'good');
-                    
-                    const goodDebateMessage = {
-                        id: messageIdCounter++,
-                        type: 'good',
-                        speaker: 'Seraphim AI',
-                        content: goodCounter,
-                        timestamp: Date.now(),
-                        isDebate: true
-                    };
-
-                    messages.push(goodDebateMessage);
-                    const goodDiv = document.createElement('div');
-                    goodDiv.innerHTML = createMessageHTML(goodDebateMessage);
-                    messagesContainer.appendChild(goodDiv.firstElementChild);
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                    
-                    const goodTextElement = document.querySelector(`#message-${goodDebateMessage.id} .typewriter`);
-                    if (goodTextElement) {
-                        await typewriterEffect(goodTextElement.parentElement, goodDebateMessage.content, 20);
-                    }
-                }, 1000);
-            } catch (error) {
-                console.error('Error in AI debate:', error);
-            }
+            
+            const { database, ref, push, serverTimestamp } = window.firebase;
+            const messagesRef = ref(database, 'messages');
+            
+            push(messagesRef, {
+                ...message,
+                timestamp: serverTimestamp(),
+                isNew: true
+            });
         }
 
         // Send message
         async function sendMessage() {
             const inputText = userInput.value.trim();
-            if (!inputText || isLoading) return;
+            if (!inputText || isLoading || inputText.length > 200) return;
 
             const userMessage = {
-                id: messageIdCounter++,
                 type: 'user',
-                speaker: 'You',
+                speaker: `USER_${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
                 content: inputText,
                 timestamp: Date.now()
             };
 
-            messages.push(userMessage);
             userInput.value = '';
             isLoading = true;
             sendButton.disabled = true;
             
-            // Add user message immediately (no typewriter for user)
-            const messageDiv = document.createElement('div');
-            messageDiv.innerHTML = createMessageHTML(userMessage);
-            messagesContainer.appendChild(messageDiv.firstElementChild);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            // Add to Firebase
+            addMessageToFirebase(userMessage);
             
-            showLoading();
+            // Show loading
+            const loadingDiv = document.createElement('div');
+            loadingDiv.innerHTML = '<div class="retro-message user-msg">AIs PROCESSING...</div>';
+            messagesContainer.appendChild(loadingDiv.firstElementChild);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
             try {
+                // Get AI responses
                 const [goodResponse, evilResponse] = await Promise.all([
                     callOpenRouterAPI(inputText, 'good'),
                     callOpenRouterAPI(inputText, 'evil')
                 ]);
 
-                hideLoading();
+                // Remove loading message
+                messagesContainer.removeChild(messagesContainer.lastElementChild);
 
+                // Add AI responses to Firebase
                 const goodMessage = {
-                    id: messageIdCounter++,
                     type: 'good',
-                    speaker: 'Seraphim AI',
+                    speaker: 'SERAPHIM_AI',
                     content: goodResponse,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    isNew: true
                 };
 
                 const evilMessage = {
-                    id: messageIdCounter++,
                     type: 'evil',
-                    speaker: 'Abyssal AI',
+                    speaker: 'ABYSSAL_AI',
                     content: evilResponse,
-                    timestamp: Date.now() + 1000
+                    timestamp: Date.now() + 1000,
+                    isNew: true
                 };
 
-                // Add good AI response with typewriter effect
-                messages.push(goodMessage);
-                const goodDiv = document.createElement('div');
-                goodDiv.innerHTML = createMessageHTML(goodMessage);
-                messagesContainer.appendChild(goodDiv.firstElementChild);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                
-                const goodTextElement = document.querySelector(`#message-${goodMessage.id} .typewriter`);
-                if (goodTextElement) {
-                    await typewriterEffect(goodTextElement.parentElement, goodMessage.content, 25);
+                addMessageToFirebase(goodMessage);
+                setTimeout(() => addMessageToFirebase(evilMessage), 1000);
+
+                // Chance for AI debate
+                if (Math.random() < 0.4) {
+                    setTimeout(() => triggerAIDebate(goodResponse, evilResponse), 3000);
                 }
 
-                // Add evil AI response with typewriter effect
-                messages.push(evilMessage);
-                const evilDiv = document.createElement('div');
-                evilDiv.innerHTML = createMessageHTML(evilMessage);
-                messagesContainer.appendChild(evilDiv.firstElementChild);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                
-                const evilTextElement = document.querySelector(`#message-${evilMessage.id} .typewriter`);
-                if (evilTextElement) {
-                    await typewriterEffect(evilTextElement.parentElement, evilMessage.content, 25);
-                }
-
-                // Higher chance of AI debate for more interaction
-                if (Math.random() < 0.5) {
-                    setTimeout(() => triggerAIDebate(goodResponse, evilResponse), 1000);
-                }
             } catch (error) {
                 console.error('Error getting AI responses:', error);
-                hideLoading();
+                messagesContainer.removeChild(messagesContainer.lastElementChild);
             } finally {
                 isLoading = false;
                 sendButton.disabled = false;
+            }
+        }
+
+        // Trigger AI debate
+        async function triggerAIDebate(goodPrevious, evilPrevious) {
+            try {
+                const debatePrompt = `The good AI said: "${goodPrevious}". Challenge this perspective directly.`;
+                const evilRebuttal = await callOpenRouterAPI(debatePrompt, 'evil');
+                
+                const evilDebateMessage = {
+                    type: 'evil',
+                    speaker: 'ABYSSAL_AI',
+                    content: evilRebuttal,
+                    timestamp: Date.now(),
+                    isDebate: true,
+                    isNew: true
+                };
+
+                addMessageToFirebase(evilDebateMessage);
+
+                setTimeout(async () => {
+                    const goodCounterPrompt = `The evil AI challenged: "${evilRebuttal}". Respond with wisdom.`;
+                    const goodCounter = await callOpenRouterAPI(goodCounterPrompt, 'good');
+                    
+                    const goodDebateMessage = {
+                        type: 'good',
+                        speaker: 'SERAPHIM_AI',
+                        content: goodCounter,
+                        timestamp: Date.now(),
+                        isDebate: true,
+                        isNew: true
+                    };
+
+                    addMessageToFirebase(goodDebateMessage);
+                }, 2000);
+            } catch (error) {
+                console.error('Error in AI debate:', error);
             }
         }
 
@@ -580,9 +666,9 @@
             }
         });
 
-        // Initialize 3D Models
+        // Initialize 3D Models (same as before but with retro styling)
         function init3DModels() {
-            // Good AI Model (Larger, Idle)
+            // Good AI Model
             const goodContainer = document.getElementById('good-model-container');
             const goodScene = new THREE.Scene();
             const goodCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
@@ -593,13 +679,12 @@
             goodRenderer.domElement.className = 'model-canvas';
             goodContainer.appendChild(goodRenderer.domElement);
             
-            // Soft blue lighting for good character
-            const goodAmbientLight = new THREE.AmbientLight(0x8888ff, 0.8);
-            const goodDirectionalLight = new THREE.DirectionalLight(0xaaaaff, 1.0);
+            const goodAmbientLight = new THREE.AmbientLight(0x00ffff, 0.8);
+            const goodDirectionalLight = new THREE.DirectionalLight(0x00ffff, 1.0);
             goodDirectionalLight.position.set(10, 10, 5);
             goodScene.add(goodAmbientLight, goodDirectionalLight);
             
-            // Evil AI Model (Larger, Idle)
+            // Evil AI Model
             const evilContainer = document.getElementById('evil-model-container');
             const evilScene = new THREE.Scene();
             const evilCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
@@ -607,77 +692,61 @@
             
             evilRenderer.setSize(320, 320);
             evilRenderer.setClearColor(0x000000, 0);
-            evilRenderer.domElement.className = 'model-canvas';
+            evilRenderer.domElement.className = 'model-canvas evil-canvas';
             evilContainer.appendChild(evilRenderer.domElement);
             
-            // Dramatic red lighting for evil character
-            const evilAmbientLight = new THREE.AmbientLight(0xff8888, 0.8);
-            const evilDirectionalLight = new THREE.DirectionalLight(0xffaaaa, 1.0);
+            const evilAmbientLight = new THREE.AmbientLight(0xff0040, 0.8);
+            const evilDirectionalLight = new THREE.DirectionalLight(0xff0040, 1.0);
             evilDirectionalLight.position.set(-10, 10, 5);
             evilScene.add(evilAmbientLight, evilDirectionalLight);
             
             const loader = new THREE.GLTFLoader();
             
-            // Load good model (static/idle)
-            loader.load(
-                GOOD_MODEL_URL,
-                function(gltf) {
-                    const goodModel = gltf.scene;
-                    goodModel.scale.set(3, 3, 3);
-                    goodScene.add(goodModel);
-                    
-                    const box = new THREE.Box3().setFromObject(goodModel);
-                    const center = box.getCenter(new THREE.Vector3());
-                    goodModel.position.sub(center);
-                    
-                    goodCamera.position.z = 4;
-                    
-                    // Static render (no spinning)
-                    function renderGood() {
-                        requestAnimationFrame(renderGood);
-                        goodRenderer.render(goodScene, goodCamera);
-                    }
-                    renderGood();
-                },
-                undefined,
-                function(error) {
-                    console.error('Error loading good model:', error);
-                    goodContainer.innerHTML = '<div class="flex items-center justify-center h-full text-blue-400 text-lg">Good AI</div>';
+            // Load models (static)
+            loader.load(GOOD_MODEL_URL, (gltf) => {
+                const goodModel = gltf.scene;
+                goodModel.scale.set(3, 3, 3);
+                goodScene.add(goodModel);
+                
+                const box = new THREE.Box3().setFromObject(goodModel);
+                const center = box.getCenter(new THREE.Vector3());
+                goodModel.position.sub(center);
+                goodCamera.position.z = 4;
+                
+                function renderGood() {
+                    requestAnimationFrame(renderGood);
+                    goodRenderer.render(goodScene, goodCamera);
                 }
-            );
+                renderGood();
+            }, undefined, (error) => {
+                goodContainer.innerHTML = '<div class="flex items-center justify-center h-full text-cyan-400 text-sm">GOOD_AI.EXE</div>';
+            });
             
-            // Load evil model (static/idle)
-            loader.load(
-                EVIL_MODEL_URL,
-                function(gltf) {
-                    const evilModel = gltf.scene;
-                    evilModel.scale.set(3, 3, 3);
-                    evilScene.add(evilModel);
-                    
-                    const box = new THREE.Box3().setFromObject(evilModel);
-                    const center = box.getCenter(new THREE.Vector3());
-                    evilModel.position.sub(center);
-                    
-                    evilCamera.position.z = 4;
-                    
-                    // Static render (no spinning)
-                    function renderEvil() {
-                        requestAnimationFrame(renderEvil);
-                        evilRenderer.render(evilScene, evilCamera);
-                    }
-                    renderEvil();
-                },
-                undefined,
-                function(error) {
-                    console.error('Error loading evil model:', error);
-                    evilContainer.innerHTML = '<div class="flex items-center justify-center h-full text-red-400 text-lg">Evil AI</div>';
+            loader.load(EVIL_MODEL_URL, (gltf) => {
+                const evilModel = gltf.scene;
+                evilModel.scale.set(3, 3, 3);
+                evilScene.add(evilModel);
+                
+                const box = new THREE.Box3().setFromObject(evilModel);
+                const center = box.getCenter(new THREE.Vector3());
+                evilModel.position.sub(center);
+                evilCamera.position.z = 4;
+                
+                function renderEvil() {
+                    requestAnimationFrame(renderEvil);
+                    evilRenderer.render(evilScene, evilCamera);
                 }
-            );
+                renderEvil();
+            }, undefined, (error) => {
+                evilContainer.innerHTML = '<div class="flex items-center justify-center h-full text-red-400 text-sm">EVIL_AI.EXE</div>';
+            });
         }
 
-        // Initialize
-        renderMessages();
-        window.addEventListener('load', init3DModels);
+        // Initialize everything
+        window.addEventListener('load', () => {
+            init3DModels();
+            initFirebase();
+        });
     </script>
 </body>
 </html>
