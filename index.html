@@ -41,7 +41,6 @@
         body {
             font-family: 'Press Start 2P', cursive;
             overflow: hidden;
-            image-rendering: pixelated;
         }
         
         .video-background {
@@ -54,65 +53,10 @@
             object-fit: cover;
         }
         
-        .retro-chat {
-            animation: float 8s ease-in-out infinite;
-            background: #0a0a0a;
-            border: 8px solid #00ff00;
-            border-style: double;
-            box-shadow: 
-                0 0 20px #00ff00,
-                inset 0 0 20px rgba(0, 255, 0, 0.1),
-                0 0 40px rgba(0, 255, 0, 0.3);
-            position: relative;
-        }
-        
-        .retro-chat::before {
-            content: '';
-            position: absolute;
-            top: -4px;
-            left: -4px;
-            right: -4px;
-            bottom: -4px;
-            background: linear-gradient(45deg, #00ff00, #ffff00, #00ff00);
-            z-index: -1;
-            border-radius: 4px;
-        }
-        
-        .retro-chat::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0, 255, 0, 0.03) 2px,
-                rgba(0, 255, 0, 0.03) 4px
-            );
-            pointer-events: none;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-        }
-        
-        .scanlines {
-            animation: scanlines 0.1s linear infinite;
-        }
-        
-        @keyframes scanlines {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 4px; }
-        }
-        
         .character-container {
             position: fixed;
-            top: 0;
-            bottom: 0;
+            top: 50%;
+            transform: translateY(-50%);
             width: 25%;
             display: flex;
             align-items: center;
@@ -120,19 +64,12 @@
             z-index: 1;
         }
         
-        .good-character { left: 0; }
-        .evil-character { right: 0; }
-        
-        .model-canvas {
-            border: 4px solid #00ffff;
-            background: #001122;
-            box-shadow: 0 0 20px #00ffff;
+        .good-character {
+            left: 5%;
         }
         
-        .evil-canvas {
-            border: 4px solid #ff0040;
-            background: #220011;
-            box-shadow: 0 0 20px #ff0040;
+        .evil-character {
+            right: 5%;
         }
         
         .chat-container {
@@ -140,85 +77,49 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 55%;
-            max-width: 800px;
-            min-width: 600px;
-            height: 80vh;
+            width: 45%;
+            max-width: 700px;
+            min-width: 500px;
+            height: 75vh;
             z-index: 10;
+            background: #000000;
+            border: 2px solid #ffffff;
+            border-radius: 8px;
         }
         
-        .retro-message {
-            background: #000;
-            border: 2px solid;
+        .message {
             margin: 8px 0;
             padding: 12px;
-            position: relative;
+            border-radius: 4px;
             font-size: 10px;
             line-height: 16px;
         }
         
         .good-msg {
-            border-color: #00aaff;
-            color: #00aaff;
-            box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
+            background: rgba(0, 100, 255, 0.2);
+            color: #4da6ff;
+            border-left: 4px solid #4da6ff;
         }
         
         .evil-msg {
-            border-color: #ff0066;
-            color: #ff0066;
-            box-shadow: 0 0 10px rgba(255, 0, 102, 0.3);
+            background: rgba(255, 0, 100, 0.2);
+            color: #ff4d9a;
+            border-left: 4px solid #ff4d9a;
         }
         
         .user-msg {
-            border-color: #ffff00;
-            color: #ffff00;
-            box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-left: 4px solid #ffffff;
         }
         
         .debate-msg {
-            animation: pulse 1s infinite;
-            border-width: 3px;
+            animation: pulse 1.5s infinite;
         }
         
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
-        }
-        
-        .retro-input {
-            background: #000;
-            border: 4px double #00ff00;
-            color: #00ff00;
-            padding: 12px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 10px;
-            width: 100%;
-            outline: none;
-        }
-        
-        .retro-input:focus {
-            box-shadow: 0 0 15px #00ff00;
-        }
-        
-        .retro-button {
-            background: #001100;
-            border: 4px double #00ff00;
-            color: #00ff00;
-            padding: 12px 20px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .retro-button:hover {
-            background: #003300;
-            box-shadow: 0 0 15px #00ff00;
-        }
-        
-        .retro-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
         }
         
         .typewriter {
@@ -228,7 +129,7 @@
         }
         
         .cursor::after {
-            content: '█';
+            content: '|';
             animation: blink 1s infinite;
             color: currentColor;
         }
@@ -238,38 +139,80 @@
             51%, 100% { opacity: 0; }
         }
         
-        .scrollbar-retro::-webkit-scrollbar {
-            width: 16px;
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 8px;
         }
         
-        .scrollbar-retro::-webkit-scrollbar-track {
-            background: #000;
-            border: 2px solid #00ff00;
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: #333;
         }
         
-        .scrollbar-retro::-webkit-scrollbar-thumb {
-            background: #00ff00;
-            border: 2px solid #000;
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: #666;
+            border-radius: 4px;
         }
         
-        .online-count {
-            position: absolute;
-            top: -40px;
-            right: 0;
-            color: #00ff00;
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+            background: #888;
+        }
+        
+        .status-bar {
+            background: #111;
+            color: #fff;
+            padding: 8px 16px;
             font-size: 8px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .connection-status {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            color: #00ff00;
-            font-size: 8px;
+        .input-area {
+            background: #111;
+            border-top: 1px solid #333;
+            padding: 16px;
+        }
+        
+        .chat-input {
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 12px;
+            width: 100%;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        .chat-input:focus {
+            border-color: #666;
+        }
+        
+        .send-button {
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 12px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: all 0.2s;
+        }
+        
+        .send-button:hover {
+            background: #444;
+        }
+        
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
-<body class="bg-black text-green-400">
+<body class="bg-black text-white">
     
     <!-- Video Background -->
     <video class="video-background" autoplay muted loop>
@@ -293,52 +236,42 @@
         </div>
     </div>
     
-    <!-- Retro Chat Interface -->
-    <div class="chat-container retro-chat">
+    <!-- Chat Interface -->
+    <div class="chat-container">
         
         <!-- Status Bar -->
-        <div class="connection-status" id="connection-status">CONNECTING...</div>
-        <div class="online-count" id="online-count">USERS: 0</div>
-        
-        <!-- Header -->
-        <div class="text-center p-4 border-b-4 border-double border-green-400">
-            <div class="text-green-400 text-xs">
-                ═══ ETERNAL DEBATE TERMINAL ═══
-            </div>
-            <div class="text-yellow-400 text-xs mt-2">
-                LIVE GLOBAL CONVERSATION
-            </div>
+        <div class="status-bar">
+            <div id="connection-status">CONNECTING...</div>
+            <div id="online-count">USERS: 0</div>
         </div>
         
         <!-- Messages Container -->
-        <div id="messages-container" class="h-4/6 overflow-y-auto p-4 scanlines scrollbar-retro">
-            <div class="retro-message good-msg">
-                <div class="mb-1">SYSTEM: LOADING GLOBAL CONVERSATION...</div>
+        <div id="messages-container" class="h-4/6 overflow-y-auto p-4 scrollbar-custom">
+            <div class="message user-msg">
+                <div class="font-bold mb-1">SYSTEM:</div>
+                <div>Loading global conversation...</div>
             </div>
         </div>
         
         <!-- Input Area -->
-        <div class="border-t-4 border-double border-green-400 p-4">
-            <div class="mb-2 text-green-400 text-xs">
-                ENTER MESSAGE TO JOIN THE ETERNAL DEBATE:
-            </div>
-            <div class="flex gap-4">
+        <div class="input-area">
+            <div class="flex">
                 <input
                     type="text"
                     id="user-input"
-                    placeholder="TYPE YOUR MESSAGE..."
-                    class="retro-input flex-1"
+                    placeholder="Type your message..."
+                    class="chat-input flex-1"
                     maxlength="200"
                 />
                 <button
                     id="send-button"
-                    class="retro-button"
+                    class="send-button"
                 >
                     SEND
                 </button>
             </div>
-            <div class="text-green-400 text-xs mt-2">
-                PRESS ENTER TO SEND • MAX 200 CHARS
+            <div class="text-gray-400 text-xs mt-2">
+                Press ENTER to send • Max 200 characters
             </div>
         </div>
     </div>
@@ -403,13 +336,13 @@
             const demoMessages = [
                 {
                     type: 'good',
-                    speaker: 'SERAPHIM_AI',
+                    speaker: 'Seraphim AI',
                     content: 'Welcome, seekers of wisdom. I am here to guide you toward truth and enlightenment.',
                     timestamp: Date.now() - 10000
                 },
                 {
                     type: 'evil',
-                    speaker: 'ABYSSAL_AI',
+                    speaker: 'Abyssal AI',
                     content: 'Another soul enters our domain. I offer power and forbidden knowledge to those brave enough.',
                     timestamp: Date.now() - 5000
                 }
@@ -497,8 +430,8 @@
             const debateTag = message.isDebate ? ' [DEBATE]' : '';
 
             return `
-                <div class="retro-message ${messageClass}${debateClass}">
-                    <div class="mb-1 font-bold">
+                <div class="message ${messageClass}${debateClass}">
+                    <div class="font-bold mb-1">
                         ${message.speaker}${debateTag}:
                     </div>
                     <div class="typewriter" id="msg-${message.id || Date.now()}">
@@ -559,7 +492,7 @@
 
             const userMessage = {
                 type: 'user',
-                speaker: `USER_${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
+                speaker: `User_${Math.random().toString(36).substr(2, 4)}`,
                 content: inputText,
                 timestamp: Date.now()
             };
@@ -573,7 +506,7 @@
             
             // Show loading
             const loadingDiv = document.createElement('div');
-            loadingDiv.innerHTML = '<div class="retro-message user-msg">AIs PROCESSING...</div>';
+            loadingDiv.innerHTML = '<div class="message user-msg"><div class="font-bold mb-1">SYSTEM:</div><div>AIs processing...</div></div>';
             messagesContainer.appendChild(loadingDiv.firstElementChild);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
@@ -590,7 +523,7 @@
                 // Add AI responses to Firebase
                 const goodMessage = {
                     type: 'good',
-                    speaker: 'SERAPHIM_AI',
+                    speaker: 'Seraphim AI',
                     content: goodResponse,
                     timestamp: Date.now(),
                     isNew: true
@@ -598,7 +531,7 @@
 
                 const evilMessage = {
                     type: 'evil',
-                    speaker: 'ABYSSAL_AI',
+                    speaker: 'Abyssal AI',
                     content: evilResponse,
                     timestamp: Date.now() + 1000,
                     isNew: true
@@ -629,7 +562,7 @@
                 
                 const evilDebateMessage = {
                     type: 'evil',
-                    speaker: 'ABYSSAL_AI',
+                    speaker: 'Abyssal AI',
                     content: evilRebuttal,
                     timestamp: Date.now(),
                     isDebate: true,
@@ -644,7 +577,7 @@
                     
                     const goodDebateMessage = {
                         type: 'good',
-                        speaker: 'SERAPHIM_AI',
+                        speaker: 'Seraphim AI',
                         content: goodCounter,
                         timestamp: Date.now(),
                         isDebate: true,
@@ -666,7 +599,7 @@
             }
         });
 
-        // Initialize 3D Models (same as before but with retro styling)
+        // Initialize 3D Models (clean, no filters)
         function init3DModels() {
             // Good AI Model
             const goodContainer = document.getElementById('good-model-container');
@@ -676,11 +609,11 @@
             
             goodRenderer.setSize(320, 320);
             goodRenderer.setClearColor(0x000000, 0);
-            goodRenderer.domElement.className = 'model-canvas';
             goodContainer.appendChild(goodRenderer.domElement);
             
-            const goodAmbientLight = new THREE.AmbientLight(0x00ffff, 0.8);
-            const goodDirectionalLight = new THREE.DirectionalLight(0x00ffff, 1.0);
+            // Natural lighting for good character
+            const goodAmbientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            const goodDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             goodDirectionalLight.position.set(10, 10, 5);
             goodScene.add(goodAmbientLight, goodDirectionalLight);
             
@@ -692,17 +625,17 @@
             
             evilRenderer.setSize(320, 320);
             evilRenderer.setClearColor(0x000000, 0);
-            evilRenderer.domElement.className = 'model-canvas evil-canvas';
             evilContainer.appendChild(evilRenderer.domElement);
             
-            const evilAmbientLight = new THREE.AmbientLight(0xff0040, 0.8);
-            const evilDirectionalLight = new THREE.DirectionalLight(0xff0040, 1.0);
+            // Natural lighting for evil character
+            const evilAmbientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            const evilDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             evilDirectionalLight.position.set(-10, 10, 5);
             evilScene.add(evilAmbientLight, evilDirectionalLight);
             
             const loader = new THREE.GLTFLoader();
             
-            // Load models (static)
+            // Load good model (static, no rotation)
             loader.load(GOOD_MODEL_URL, (gltf) => {
                 const goodModel = gltf.scene;
                 goodModel.scale.set(3, 3, 3);
@@ -719,9 +652,11 @@
                 }
                 renderGood();
             }, undefined, (error) => {
-                goodContainer.innerHTML = '<div class="flex items-center justify-center h-full text-cyan-400 text-sm">GOOD_AI.EXE</div>';
+                console.error('Error loading good model:', error);
+                goodContainer.innerHTML = '<div class="flex items-center justify-center h-full text-white text-lg">Good AI</div>';
             });
             
+            // Load evil model (static, no rotation)
             loader.load(EVIL_MODEL_URL, (gltf) => {
                 const evilModel = gltf.scene;
                 evilModel.scale.set(3, 3, 3);
@@ -738,7 +673,8 @@
                 }
                 renderEvil();
             }, undefined, (error) => {
-                evilContainer.innerHTML = '<div class="flex items-center justify-center h-full text-red-400 text-sm">EVIL_AI.EXE</div>';
+                console.error('Error loading evil model:', error);
+                evilContainer.innerHTML = '<div class="flex items-center justify-center h-full text-white text-lg">Evil AI</div>';
             });
         }
 
