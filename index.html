@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI: Good vs Evil - Eternal Debate</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -86,13 +88,8 @@
             </div>
             
             <!-- 3D Model Container -->
-            <div class="w-48 h-48 border-2 border-blue-400/50 rounded-lg bg-gradient-to-t from-blue-900/20 to-transparent flex items-center justify-center">
-                <div class="text-blue-400/50 text-center">
-                    <div class="animate-pulse-custom">
-                        <div class="w-16 h-16 border-4 border-blue-400/30 rounded-full mx-auto mb-2"></div>
-                        <p class="text-xs">3D Model Here</p>
-                    </div>
-                </div>
+            <div id="good-model-container" class="w-48 h-48 border-2 border-blue-400/50 rounded-lg bg-gradient-to-t from-blue-900/20 to-transparent">
+                <!-- Three.js canvas will be inserted here -->
             </div>
             
             <div class="mt-4 text-center">
@@ -153,13 +150,8 @@
             </div>
             
             <!-- 3D Model Container -->
-            <div class="w-48 h-48 border-2 border-red-400/50 rounded-lg bg-gradient-to-t from-red-900/20 to-transparent flex items-center justify-center">
-                <div class="text-red-400/50 text-center">
-                    <div class="animate-pulse-custom">
-                        <div class="w-16 h-16 border-4 border-red-400/30 rounded-full mx-auto mb-2"></div>
-                        <p class="text-xs">3D Model Here</p>
-                    </div>
-                </div>
+            <div id="evil-model-container" class="w-48 h-48 border-2 border-red-400/50 rounded-lg bg-gradient-to-t from-red-900/20 to-transparent">
+                <!-- Three.js canvas will be inserted here -->
             </div>
             
             <div class="mt-4 text-center">
@@ -178,6 +170,10 @@
     <script>
         // Configuration - Add your OpenRouter API key here
         const OPENROUTER_API_KEY = 'YOUR_OPENROUTER_API_KEY_HERE';
+        
+        // 3D Model URLs - Update these if you host the models elsewhere
+        const GOOD_MODEL_URL = 'https://cdn.jsdelivr.net/gh/sovagpt/goodvevil@main/good.glb';
+        const EVIL_MODEL_URL = 'https://cdn.jsdelivr.net/gh/sovagpt/goodvevil@main/evil.glb';
         
         // State
         let messages = [
@@ -458,6 +454,113 @@
 
         // Initialize
         renderMessages();
+        
+        // Initialize 3D Models
+        function init3DModels() {
+            // Good AI Model
+            const goodContainer = document.getElementById('good-model-container');
+            const goodScene = new THREE.Scene();
+            const goodCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const goodRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            goodRenderer.setSize(192, 192); // 48 * 4 (w-48 h-48 from Tailwind)
+            goodRenderer.setClearColor(0x000000, 0);
+            goodContainer.appendChild(goodRenderer.domElement);
+            
+            // Add lighting for good model
+            const goodAmbientLight = new THREE.AmbientLight(0x4444ff, 0.6);
+            const goodDirectionalLight = new THREE.DirectionalLight(0x8888ff, 0.8);
+            goodDirectionalLight.position.set(5, 5, 5);
+            goodScene.add(goodAmbientLight, goodDirectionalLight);
+            
+            // Evil AI Model
+            const evilContainer = document.getElementById('evil-model-container');
+            const evilScene = new THREE.Scene();
+            const evilCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const evilRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            evilRenderer.setSize(192, 192);
+            evilRenderer.setClearColor(0x000000, 0);
+            evilContainer.appendChild(evilRenderer.domElement);
+            
+            // Add lighting for evil model
+            const evilAmbientLight = new THREE.AmbientLight(0xff4444, 0.6);
+            const evilDirectionalLight = new THREE.DirectionalLight(0xff8888, 0.8);
+            evilDirectionalLight.position.set(5, 5, 5);
+            evilScene.add(evilAmbientLight, evilDirectionalLight);
+            
+            // Load models
+            const loader = new THREE.GLTFLoader();
+            
+            // Load good model
+            loader.load(
+                GOOD_MODEL_URL,
+                function(gltf) {
+                    const goodModel = gltf.scene;
+                    goodModel.scale.set(2, 2, 2); // Adjust scale as needed
+                    goodScene.add(goodModel);
+                    
+                    // Center the model
+                    const box = new THREE.Box3().setFromObject(goodModel);
+                    const center = box.getCenter(new THREE.Vector3());
+                    goodModel.position.sub(center);
+                    
+                    goodCamera.position.z = 3;
+                    
+                    // Animation loop for good model
+                    function animateGood() {
+                        requestAnimationFrame(animateGood);
+                        goodModel.rotation.y += 0.01; // Slow rotation
+                        goodRenderer.render(goodScene, goodCamera);
+                    }
+                    animateGood();
+                },
+                function(progress) {
+                    console.log('Good model loading progress:', (progress.loaded / progress.total * 100) + '%');
+                },
+                function(error) {
+                    console.error('Error loading good model:', error);
+                    // Fallback - show loading text
+                    goodContainer.innerHTML = '<div class="flex items-center justify-center h-full text-blue-400/50 text-xs">Model Load Error</div>';
+                }
+            );
+            
+            // Load evil model
+            loader.load(
+                EVIL_MODEL_URL,
+                function(gltf) {
+                    const evilModel = gltf.scene;
+                    evilModel.scale.set(2, 2, 2); // Adjust scale as needed
+                    evilScene.add(evilModel);
+                    
+                    // Center the model
+                    const box = new THREE.Box3().setFromObject(evilModel);
+                    const center = box.getCenter(new THREE.Vector3());
+                    evilModel.position.sub(center);
+                    
+                    evilCamera.position.z = 3;
+                    
+                    // Animation loop for evil model
+                    function animateEvil() {
+                        requestAnimationFrame(animateEvil);
+                        evilModel.rotation.y -= 0.01; // Slow rotation (opposite direction)
+                        evilRenderer.render(evilScene, evilCamera);
+                    }
+                    animateEvil();
+                },
+                function(progress) {
+                    console.log('Evil model loading progress:', (progress.loaded / progress.total * 100) + '%');
+                },
+                function(error) {
+                    console.error('Error loading evil model:', error);
+                    // Fallback - show loading text
+                    evilContainer.innerHTML = '<div class="flex items-center justify-center h-full text-red-400/50 text-xs">Model Load Error</div>';
+                }
+            );
+        }
+        
+        // Initialize 3D models when page loads
+        window.addEventListener('load', init3DModels);
     </script>
 </body>
 </html>
