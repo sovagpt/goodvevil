@@ -7,23 +7,63 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'mono': ['Courier New', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
     <style>
+        body {
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover;
+        }
+        
+        .floating-chat {
+            animation: float 6s ease-in-out infinite;
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .breathing {
+            animation: breathe 3s ease-in-out infinite;
+        }
+        
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.02); opacity: 1; }
+        }
+        
         .rpg-box {
             background: black;
             border: 4px solid white;
             position: relative;
         }
+        
+        .good-message {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+        }
+        
+        .evil-message {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+        }
+        
+        .user-message {
+            background: rgba(107, 114, 128, 0.3);
+            border-color: #6b7280;
+        }
+        
         .rpg-pointer-left {
             position: absolute;
             top: 16px;
@@ -32,8 +72,9 @@
             height: 0;
             border-top: 8px solid transparent;
             border-bottom: 8px solid transparent;
-            border-right: 8px solid white;
+            border-right: 8px solid;
         }
+        
         .rpg-pointer-right {
             position: absolute;
             top: 16px;
@@ -42,136 +83,126 @@
             height: 0;
             border-top: 8px solid transparent;
             border-bottom: 8px solid transparent;
-            border-left: 8px solid white;
+            border-left: 8px solid;
         }
-        .animate-pulse-custom {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        
+        .character-container {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 25%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
+        
+        .good-character {
+            left: 0;
         }
+        
+        .evil-character {
+            right: 0;
+        }
+        
+        .model-canvas {
+            border-radius: 20px;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+        }
+        
         .typing-dots::after {
             content: '...';
             animation: typing 1.5s infinite;
         }
+        
         @keyframes typing {
             0%, 20% { content: ''; }
             40% { content: '.'; }
             60% { content: '..'; }
             80%, 100% { content: '...'; }
         }
+        
+        .chat-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 45%;
+            max-width: 600px;
+            height: 70vh;
+            z-index: 10;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white font-mono">
+<body class="bg-black text-white">
     
-    <!-- Header -->
-    <div class="text-center py-8 border-b border-gray-700">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-400 via-white to-red-400 bg-clip-text text-transparent">
-            AI: GOOD vs EVIL
-        </h1>
-        <p class="text-gray-400 mt-2">Where artificial minds debate eternal questions</p>
+    <!-- Video Background - Replace with your video -->
+    <video class="video-background" autoplay muted loop>
+        <!-- Add your background video here -->
+        <!-- <source src="your-background-video.mp4" type="video/mp4"> -->
+        <!-- Fallback gradient background -->
+    </video>
+    
+    <!-- Fallback gradient background if no video -->
+    <div class="video-background bg-gradient-to-r from-blue-900 via-purple-900 to-red-900"></div>
+    
+    <!-- Good Character (Left Side) -->
+    <div class="character-container good-character">
+        <div id="good-model-container" class="w-80 h-80">
+            <!-- Three.js canvas for good character -->
+        </div>
     </div>
-
-    <!-- Main Content -->
-    <div class="flex h-[calc(100vh-140px)]">
+    
+    <!-- Evil Character (Right Side) -->
+    <div class="character-container evil-character">
+        <div id="evil-model-container" class="w-80 h-80">
+            <!-- Three.js canvas for evil character -->
+        </div>
+    </div>
+    
+    <!-- Floating Chat Interface -->
+    <div class="chat-container floating-chat breathing rounded-2xl border border-white/20">
         
-        <!-- Left Side - Good AI 3D Space -->
-        <div class="w-1/4 bg-gradient-to-b from-blue-900/30 to-blue-800/10 border-r border-blue-500/30 flex flex-col items-center justify-center">
-            <div class="text-center mb-4">
-                <!-- Good AI Icon -->
-                <svg class="w-12 h-12 text-blue-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                </svg>
-                <h3 class="text-xl font-semibold text-blue-300">SERAPHIM AI</h3>
-                <p class="text-blue-400/70 text-sm">Guardian of Light</p>
-            </div>
-            
-            <!-- 3D Model Container -->
-            <div id="good-model-container" class="w-48 h-48 border-2 border-blue-400/50 rounded-lg bg-gradient-to-t from-blue-900/20 to-transparent">
-                <!-- Three.js canvas will be inserted here -->
-            </div>
-            
-            <div class="mt-4 text-center">
-                <div class="flex space-x-1 justify-center">
-                    <div class="w-1 h-8 bg-blue-400/40 animate-pulse-custom"></div>
-                    <div class="w-1 h-8 bg-blue-400/40 animate-pulse-custom" style="animation-delay: 0.1s;"></div>
-                    <div class="w-1 h-8 bg-blue-400/40 animate-pulse-custom" style="animation-delay: 0.2s;"></div>
-                    <div class="w-1 h-8 bg-blue-400/40 animate-pulse-custom" style="animation-delay: 0.3s;"></div>
-                    <div class="w-1 h-8 bg-blue-400/40 animate-pulse-custom" style="animation-delay: 0.4s;"></div>
-                </div>
-                <p class="text-blue-400/60 text-xs mt-2">Active</p>
-            </div>
+        <!-- Messages Container -->
+        <div id="messages-container" class="h-5/6 overflow-y-auto p-6 space-y-4 scrollbar-thin">
+            <!-- Messages will be populated by JavaScript -->
         </div>
-
-        <!-- Center - Chat Interface -->
-        <div class="flex-1 flex flex-col bg-gray-900/50">
-            
-            <!-- Messages Container -->
-            <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4">
-                <!-- Initial messages will be populated by JavaScript -->
-            </div>
-
-            <!-- Input Area -->
-            <div class="border-t border-gray-700 p-4">
-                <div class="flex space-x-2">
-                    <input
-                        type="text"
-                        id="user-input"
-                        placeholder="Ask both AIs anything... or watch them debate"
-                        class="flex-1 bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-600 focus:border-gray-500 focus:outline-none"
-                    />
-                    <button
-                        id="send-button"
-                        class="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        <!-- Send Icon -->
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                        </svg>
-                    </button>
-                </div>
-                <p class="text-xs text-gray-500 mt-2 text-center">
-                    Both AIs will respond to your message • Sometimes they'll debate each other
-                </p>
-            </div>
-        </div>
-
-        <!-- Right Side - Evil AI 3D Space -->
-        <div class="w-1/4 bg-gradient-to-b from-red-900/30 to-red-800/10 border-l border-red-500/30 flex flex-col items-center justify-center">
-            <div class="text-center mb-4">
-                <!-- Evil AI Icon -->
-                <svg class="w-12 h-12 text-red-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path>
-                </svg>
-                <h3 class="text-xl font-semibold text-red-300">ABYSSAL AI</h3>
-                <p class="text-red-400/70 text-sm">Harbinger of Chaos</p>
-            </div>
-            
-            <!-- 3D Model Container -->
-            <div id="evil-model-container" class="w-48 h-48 border-2 border-red-400/50 rounded-lg bg-gradient-to-t from-red-900/20 to-transparent">
-                <!-- Three.js canvas will be inserted here -->
-            </div>
-            
-            <div class="mt-4 text-center">
-                <div class="flex space-x-1 justify-center">
-                    <div class="w-1 h-8 bg-red-400/40 animate-pulse-custom"></div>
-                    <div class="w-1 h-8 bg-red-400/40 animate-pulse-custom" style="animation-delay: 0.1s;"></div>
-                    <div class="w-1 h-8 bg-red-400/40 animate-pulse-custom" style="animation-delay: 0.2s;"></div>
-                    <div class="w-1 h-8 bg-red-400/40 animate-pulse-custom" style="animation-delay: 0.3s;"></div>
-                    <div class="w-1 h-8 bg-red-400/40 animate-pulse-custom" style="animation-delay: 0.4s;"></div>
-                </div>
-                <p class="text-red-400/60 text-xs mt-2">Active</p>
+        
+        <!-- Input Area -->
+        <div class="h-1/6 border-t border-white/20 p-4">
+            <div class="flex space-x-3">
+                <input
+                    type="text"
+                    id="user-input"
+                    placeholder="Ask both AIs anything..."
+                    class="flex-1 bg-black/50 text-white px-4 py-3 rounded-lg border border-white/30 focus:border-white/60 focus:outline-none backdrop-blur-sm"
+                />
+                <button
+                    id="send-button"
+                    class="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg transition-all duration-200 backdrop-blur-sm"
+                >
+                    Send
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // Configuration - Add your OpenRouter API key here
+        // Configuration
         const OPENROUTER_API_KEY = 'YOUR_OPENROUTER_API_KEY_HERE';
-        
-        // 3D Model URLs - Update these if you host the models elsewhere
         const GOOD_MODEL_URL = 'https://cdn.jsdelivr.net/gh/sovagpt/goodvevil@main/good.glb';
         const EVIL_MODEL_URL = 'https://cdn.jsdelivr.net/gh/sovagpt/goodvevil@main/evil.glb';
         
@@ -256,45 +287,33 @@
 
         // Create message HTML
         function createMessageHTML(message) {
-            const isDebate = message.isDebate ? 'animate-pulse-custom' : '';
-            const avatarIcon = message.type === 'good' 
-                ? '<svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>'
-                : message.type === 'evil'
-                ? '<svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>'
-                : '<div class="w-6 h-6 bg-gray-400 rounded"></div>';
-
-            const alignment = message.type === 'user' ? 'justify-center' : message.type === 'good' ? 'justify-start' : 'justify-end';
-            const avatarBorder = message.type === 'good' ? 'border-blue-400 bg-blue-900/30' :
-                                message.type === 'evil' ? 'border-red-400 bg-red-900/30' :
-                                'border-gray-400 bg-gray-700';
-
-            const pointer = message.type === 'good' ? '<div class="rpg-pointer-left"></div>' :
-                           message.type === 'evil' ? '<div class="rpg-pointer-right"></div>' : '';
-
-            const debateTag = message.isDebate ? '<span class="ml-2 text-yellow-300 text-xs">[DEBATE MODE]</span>' : '';
+            const messageClass = message.type === 'good' ? 'good-message' : 
+                               message.type === 'evil' ? 'evil-message' : 'user-message';
+            
+            const textColor = message.type === 'good' ? 'text-blue-200' :
+                            message.type === 'evil' ? 'text-red-200' : 'text-gray-200';
+            
+            const alignment = message.type === 'user' ? 'justify-center' : 
+                            message.type === 'good' ? 'justify-start' : 'justify-end';
+            
+            const pointer = message.type === 'good' ? '<div class="rpg-pointer-left border-r-blue-500"></div>' :
+                          message.type === 'evil' ? '<div class="rpg-pointer-right border-l-red-500"></div>' : '';
+            
+            const debateTag = message.isDebate ? '<span class="ml-2 text-yellow-300 text-xs animate-pulse">[DEBATE]</span>' : '';
 
             return `
-                <div class="flex ${alignment} mb-4">
-                    <div class="max-w-lg relative ${isDebate}">
-                        <div class="rpg-box">
-                            <div class="p-4">
-                                <div class="flex items-start space-x-3">
-                                    <div class="w-12 h-12 flex-shrink-0 border-2 ${avatarBorder} flex items-center justify-center">
-                                        ${avatarIcon}
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="flex items-center mb-2">
-                                            <span class="text-white font-bold text-sm tracking-wide">
-                                                ★ ${message.speaker}
-                                                ${debateTag}
-                                            </span>
-                                        </div>
-                                        <div class="text-white text-sm leading-relaxed font-mono">
-                                            <span class="text-yellow-300">★ </span>
-                                            ${message.content}
-                                        </div>
-                                    </div>
-                                </div>
+                <div class="flex ${alignment}">
+                    <div class="max-w-md relative">
+                        <div class="rpg-box ${messageClass} p-4 rounded-lg">
+                            <div class="mb-2">
+                                <span class="text-white font-bold text-sm">
+                                    ★ ${message.speaker}
+                                    ${debateTag}
+                                </span>
+                            </div>
+                            <div class="${textColor} text-sm leading-relaxed">
+                                <span class="text-yellow-300">★ </span>
+                                ${message.content}
                             </div>
                         </div>
                         ${pointer}
@@ -312,16 +331,11 @@
         // Show loading state
         function showLoading() {
             const loadingHTML = `
-                <div class="flex justify-center mb-4">
-                    <div class="rpg-box p-4">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-12 h-12 border-2 border-gray-400 bg-gray-700 flex items-center justify-center">
-                                <div class="w-2 h-2 bg-white animate-ping"></div>
-                            </div>
-                            <div class="text-white font-mono text-sm">
-                                <span class="text-yellow-300">★ </span>
-                                Both AIs are thinking<span class="typing-dots"></span>
-                            </div>
+                <div class="flex justify-center">
+                    <div class="rpg-box user-message p-4 rounded-lg">
+                        <div class="text-white text-sm">
+                            <span class="text-yellow-300">★ </span>
+                            Both AIs are thinking<span class="typing-dots"></span>
                         </div>
                     </div>
                 </div>
@@ -332,7 +346,7 @@
 
         // Hide loading state
         function hideLoading() {
-            const loadingElements = messagesContainer.querySelectorAll('.flex.justify-center.mb-4');
+            const loadingElements = messagesContainer.querySelectorAll('.flex.justify-center');
             if (loadingElements.length > 0) {
                 loadingElements[loadingElements.length - 1].remove();
             }
@@ -357,7 +371,6 @@
                 messages.push(evilDebateMessage);
                 renderMessages();
 
-                // Good AI responds to evil's challenge
                 setTimeout(async () => {
                     const goodCounterPrompt = `The evil AI just challenged you with: "${evilRebuttal}". Respond with wisdom and conviction, but remain compassionate.`;
                     
@@ -402,7 +415,6 @@
             showLoading();
 
             try {
-                // Get responses from both AIs
                 const [goodResponse, evilResponse] = await Promise.all([
                     callOpenRouterAPI(inputText, 'good'),
                     callOpenRouterAPI(inputText, 'evil')
@@ -410,7 +422,6 @@
 
                 hideLoading();
 
-                // Add good AI response
                 const goodMessage = {
                     id: messageIdCounter++,
                     type: 'good',
@@ -419,7 +430,6 @@
                     timestamp: Date.now()
                 };
 
-                // Add evil AI response
                 const evilMessage = {
                     id: messageIdCounter++,
                     type: 'evil',
@@ -431,7 +441,6 @@
                 messages.push(goodMessage, evilMessage);
                 renderMessages();
 
-                // Sometimes trigger inter-AI conversation
                 if (Math.random() < 0.3) {
                     setTimeout(() => triggerAIDebate(goodResponse, evilResponse), 2000);
                 }
@@ -452,114 +461,103 @@
             }
         });
 
-        // Initialize
-        renderMessages();
-        
         // Initialize 3D Models
         function init3DModels() {
-            // Good AI Model
+            // Good AI Model (Larger, Idle)
             const goodContainer = document.getElementById('good-model-container');
             const goodScene = new THREE.Scene();
             const goodCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
             const goodRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             
-            goodRenderer.setSize(192, 192); // 48 * 4 (w-48 h-48 from Tailwind)
+            goodRenderer.setSize(320, 320);
             goodRenderer.setClearColor(0x000000, 0);
+            goodRenderer.domElement.className = 'model-canvas';
             goodContainer.appendChild(goodRenderer.domElement);
             
-            // Add lighting for good model
-            const goodAmbientLight = new THREE.AmbientLight(0x4444ff, 0.6);
-            const goodDirectionalLight = new THREE.DirectionalLight(0x8888ff, 0.8);
-            goodDirectionalLight.position.set(5, 5, 5);
+            // Soft blue lighting for good character
+            const goodAmbientLight = new THREE.AmbientLight(0x8888ff, 0.8);
+            const goodDirectionalLight = new THREE.DirectionalLight(0xaaaaff, 1.0);
+            goodDirectionalLight.position.set(10, 10, 5);
             goodScene.add(goodAmbientLight, goodDirectionalLight);
             
-            // Evil AI Model
+            // Evil AI Model (Larger, Idle)
             const evilContainer = document.getElementById('evil-model-container');
             const evilScene = new THREE.Scene();
             const evilCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
             const evilRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             
-            evilRenderer.setSize(192, 192);
+            evilRenderer.setSize(320, 320);
             evilRenderer.setClearColor(0x000000, 0);
+            evilRenderer.domElement.className = 'model-canvas';
             evilContainer.appendChild(evilRenderer.domElement);
             
-            // Add lighting for evil model
-            const evilAmbientLight = new THREE.AmbientLight(0xff4444, 0.6);
-            const evilDirectionalLight = new THREE.DirectionalLight(0xff8888, 0.8);
-            evilDirectionalLight.position.set(5, 5, 5);
+            // Dramatic red lighting for evil character
+            const evilAmbientLight = new THREE.AmbientLight(0xff8888, 0.8);
+            const evilDirectionalLight = new THREE.DirectionalLight(0xffaaaa, 1.0);
+            evilDirectionalLight.position.set(-10, 10, 5);
             evilScene.add(evilAmbientLight, evilDirectionalLight);
             
-            // Load models
             const loader = new THREE.GLTFLoader();
             
-            // Load good model
+            // Load good model (static/idle)
             loader.load(
                 GOOD_MODEL_URL,
                 function(gltf) {
                     const goodModel = gltf.scene;
-                    goodModel.scale.set(2, 2, 2); // Adjust scale as needed
+                    goodModel.scale.set(3, 3, 3);
                     goodScene.add(goodModel);
                     
-                    // Center the model
                     const box = new THREE.Box3().setFromObject(goodModel);
                     const center = box.getCenter(new THREE.Vector3());
                     goodModel.position.sub(center);
                     
-                    goodCamera.position.z = 3;
+                    goodCamera.position.z = 4;
                     
-                    // Animation loop for good model
-                    function animateGood() {
-                        requestAnimationFrame(animateGood);
-                        goodModel.rotation.y += 0.01; // Slow rotation
+                    // Static render (no spinning)
+                    function renderGood() {
+                        requestAnimationFrame(renderGood);
                         goodRenderer.render(goodScene, goodCamera);
                     }
-                    animateGood();
+                    renderGood();
                 },
-                function(progress) {
-                    console.log('Good model loading progress:', (progress.loaded / progress.total * 100) + '%');
-                },
+                undefined,
                 function(error) {
                     console.error('Error loading good model:', error);
-                    // Fallback - show loading text
-                    goodContainer.innerHTML = '<div class="flex items-center justify-center h-full text-blue-400/50 text-xs">Model Load Error</div>';
+                    goodContainer.innerHTML = '<div class="flex items-center justify-center h-full text-blue-400 text-lg">Good AI</div>';
                 }
             );
             
-            // Load evil model
+            // Load evil model (static/idle)
             loader.load(
                 EVIL_MODEL_URL,
                 function(gltf) {
                     const evilModel = gltf.scene;
-                    evilModel.scale.set(2, 2, 2); // Adjust scale as needed
+                    evilModel.scale.set(3, 3, 3);
                     evilScene.add(evilModel);
                     
-                    // Center the model
                     const box = new THREE.Box3().setFromObject(evilModel);
                     const center = box.getCenter(new THREE.Vector3());
                     evilModel.position.sub(center);
                     
-                    evilCamera.position.z = 3;
+                    evilCamera.position.z = 4;
                     
-                    // Animation loop for evil model
-                    function animateEvil() {
-                        requestAnimationFrame(animateEvil);
-                        evilModel.rotation.y -= 0.01; // Slow rotation (opposite direction)
+                    // Static render (no spinning)
+                    function renderEvil() {
+                        requestAnimationFrame(renderEvil);
                         evilRenderer.render(evilScene, evilCamera);
                     }
-                    animateEvil();
+                    renderEvil();
                 },
-                function(progress) {
-                    console.log('Evil model loading progress:', (progress.loaded / progress.total * 100) + '%');
-                },
+                undefined,
                 function(error) {
                     console.error('Error loading evil model:', error);
-                    // Fallback - show loading text
-                    evilContainer.innerHTML = '<div class="flex items-center justify-center h-full text-red-400/50 text-xs">Model Load Error</div>';
+                    evilContainer.innerHTML = '<div class="flex items-center justify-center h-full text-red-400 text-lg">Evil AI</div>';
                 }
             );
         }
-        
-        // Initialize 3D models when page loads
+
+        // Initialize
+        renderMessages();
         window.addEventListener('load', init3DModels);
     </script>
 </body>
