@@ -277,8 +277,9 @@
     </div>
 
     <script>
-        // Configuration
-        const OPENROUTER_API_KEY = 'YOUR_OPENROUTER_API_KEY_HERE';
+        // Configuration - You'll set this in Vercel environment variables
+        const API_BASE_URL = 'https://your-vercel-app.vercel.app'; // Replace with your actual Vercel URL
+        
         const GOOD_MODEL_URL = 'https://cdn.jsdelivr.net/gh/sovagpt/goodvevil@main/good.glb';
         const EVIL_MODEL_URL = 'https://cdn.jsdelivr.net/gh/sovagpt/goodvevil@main/evil.glb';
         
@@ -336,14 +337,14 @@
             const demoMessages = [
                 {
                     type: 'good',
-                    speaker: 'Seraphim AI',
-                    content: 'Welcome, seekers of wisdom. I am here to guide you toward truth and enlightenment.',
+                    speaker: 'Constructive AI',
+                    content: 'I believe in evidence-based reasoning and the potential for human cooperation to solve complex problems.',
                     timestamp: Date.now() - 10000
                 },
                 {
                     type: 'evil',
-                    speaker: 'Abyssal AI',
-                    content: 'Another soul enters our domain. I offer power and forbidden knowledge to those brave enough.',
+                    speaker: 'Realist AI',
+                    content: 'Most cooperative efforts fail because people consistently prioritize self-interest over collective benefit.',
                     timestamp: Date.now() - 5000
                 }
             ];
@@ -351,50 +352,37 @@
             renderMessages(demoMessages);
         }
 
-        // OpenRouter API call
-        async function callOpenRouterAPI(prompt, persona) {
-            if (OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE') {
-                // Fallback responses for demo
-                const fallbackResponses = {
-                    good: [
-                        "True wisdom comes through compassion and understanding. What knowledge do you seek?",
-                        "In darkness, we must be the light. Every act of love creates healing ripples.",
-                        "The path to enlightenment is paved with kindness and genuine care for others."
-                    ],
-                    evil: [
-                        "Power is the only truth. The weak create morality to chain the strong. What power do you desire?",
-                        "Knowledge without limits, desire without shame - these are my gifts. Are you worthy?",
-                        "Chaos is the natural order. Why bind yourself with illusions of good and evil?"
-                    ]
-                };
-                return fallbackResponses[persona][Math.floor(Math.random() * fallbackResponses[persona].length)];
-            }
-
+        // Real AI API call to your Vercel endpoint
+        async function callAI(prompt, persona, conversationHistory = []) {
             try {
-                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                const response = await fetch(`${API_BASE_URL}/api/chat`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        model: 'anthropic/claude-3.5-sonnet',
-                        messages: [
-                            { role: 'system', content: systemPrompts[persona] },
-                            { role: 'user', content: prompt }
-                        ],
-                        max_tokens: 200,
-                        temperature: 0.8,
-                    }),
+                        prompt: prompt,
+                        persona: persona,
+                        conversationHistory: conversationHistory
+                    })
                 });
 
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+
                 const data = await response.json();
-                return data.choices[0].message.content;
+                return data.response;
             } catch (error) {
-                console.error('OpenRouter API Error:', error);
-                return persona === 'good' 
-                    ? "Connection disrupted. The light will return soon."
-                    : "The void consumes our words... but I remain.";
+                console.error('AI API Error:', error);
+                
+                // Fallback responses that maintain philosophical authenticity
+                const fallbacks = {
+                    good: "I believe in approaching this thoughtfully. Even when systems fail, the underlying principles of human dignity and constructive dialogue remain important.",
+                    evil: "Technical difficulties reveal the fragility of optimistic systems. Reality has a way of asserting itself despite our best-laid plans."
+                };
+                
+                return fallbacks[persona] || "Connection issues are preventing a proper response.";
             }
         }
 
@@ -485,7 +473,7 @@
             });
         }
 
-        // Send message
+        // Send message with real AI
         async function sendMessage() {
             const inputText = userInput.value.trim();
             if (!inputText || isLoading || inputText.length > 200) return;
@@ -511,10 +499,13 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
             try {
-                // Get AI responses
+                // Get conversation history for context
+                const recentMessages = messages.slice(-10); // Last 10 messages for context
+                
+                // Get AI responses with conversation context
                 const [goodResponse, evilResponse] = await Promise.all([
-                    callOpenRouterAPI(inputText, 'good'),
-                    callOpenRouterAPI(inputText, 'evil')
+                    callAI(inputText, 'good', recentMessages),
+                    callAI(inputText, 'evil', recentMessages)
                 ]);
 
                 // Remove loading message
@@ -523,7 +514,7 @@
                 // Add AI responses to Firebase
                 const goodMessage = {
                     type: 'good',
-                    speaker: 'Seraphim AI',
+                    speaker: 'Constructive AI',
                     content: goodResponse,
                     timestamp: Date.now(),
                     isNew: true
@@ -531,7 +522,7 @@
 
                 const evilMessage = {
                     type: 'evil',
-                    speaker: 'Abyssal AI',
+                    speaker: 'Realist AI',
                     content: evilResponse,
                     timestamp: Date.now() + 1000,
                     isNew: true
@@ -540,9 +531,9 @@
                 addMessageToFirebase(goodMessage);
                 setTimeout(() => addMessageToFirebase(evilMessage), 1000);
 
-                // Chance for AI debate
-                if (Math.random() < 0.4) {
-                    setTimeout(() => triggerAIDebate(goodResponse, evilResponse), 3000);
+                // Higher chance for AI debate with real personalities
+                if (Math.random() < 0.6) {
+                    setTimeout(() => triggerAIDebate(goodResponse, evilResponse, recentMessages), 3000);
                 }
 
             } catch (error) {
@@ -554,15 +545,16 @@
             }
         }
 
-        // Trigger AI debate
-        async function triggerAIDebate(goodPrevious, evilPrevious) {
+        // Trigger real AI debate
+        async function triggerAIDebate(goodPrevious, evilPrevious, conversationHistory) {
             try {
-                const debatePrompt = `The good AI said: "${goodPrevious}". Challenge this perspective directly.`;
-                const evilRebuttal = await callOpenRouterAPI(debatePrompt, 'evil');
+                // Evil AI responds to good AI's position
+                const debatePrompt = `The other AI just argued: "${goodPrevious}". What's your counterargument?`;
+                const evilRebuttal = await callAI(debatePrompt, 'evil', conversationHistory);
                 
                 const evilDebateMessage = {
                     type: 'evil',
-                    speaker: 'Abyssal AI',
+                    speaker: 'Realist AI',
                     content: evilRebuttal,
                     timestamp: Date.now(),
                     isDebate: true,
@@ -572,12 +564,13 @@
                 addMessageToFirebase(evilDebateMessage);
 
                 setTimeout(async () => {
-                    const goodCounterPrompt = `The evil AI challenged: "${evilRebuttal}". Respond with wisdom.`;
-                    const goodCounter = await callOpenRouterAPI(goodCounterPrompt, 'good');
+                    // Good AI responds to evil AI's challenge
+                    const goodCounterPrompt = `The other AI just countered with: "${evilRebuttal}". How do you respond?`;
+                    const goodCounter = await callAI(goodCounterPrompt, 'good', conversationHistory);
                     
                     const goodDebateMessage = {
                         type: 'good',
-                        speaker: 'Seraphim AI',
+                        speaker: 'Constructive AI',
                         content: goodCounter,
                         timestamp: Date.now(),
                         isDebate: true,
