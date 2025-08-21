@@ -11,7 +11,7 @@
     <!-- Firebase -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getDatabase, ref, push, onValue, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+        import { getDatabase, ref, push, onValue, serverTimestamp, set, get } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
         
         // Your Firebase config
         const firebaseConfig = {
@@ -30,7 +30,7 @@
         const database = getDatabase(app);
         
         // Make Firebase available globally
-        window.firebase = { database, ref, push, onValue, serverTimestamp };
+        window.firebase = { database, ref, push, onValue, serverTimestamp, set, get };
         
         console.log('Firebase initialized successfully');
     </script>
@@ -427,9 +427,11 @@
                 if (data && data[userIP]) {
                     hasVoted = true;
                     disableVotingButtons();
+                    console.log('User has already voted for:', data[userIP].side);
                 } else {
                     hasVoted = false;
                     enableVotingButtons();
+                    console.log('User has not voted yet');
                 }
             });
         }
@@ -467,11 +469,14 @@
                 return;
             }
 
+            console.log('Attempting to join', side, 'allegiance for IP:', userIP);
+
             try {
                 const { database, ref, push, set, get } = window.firebase;
                 
                 // Record the vote with encoded IP
                 const votersRef = ref(database, `voters/${userIP}`);
+                console.log('Setting voter data...');
                 await set(votersRef, {
                     side: side,
                     timestamp: Date.now(),
@@ -479,12 +484,14 @@
                 });
 
                 // Update allegiance count
+                console.log('Updating allegiance count...');
                 const allegianceRef = ref(database, `allegiances/${side}`);
                 const snapshot = await get(allegianceRef);
                 const currentCount = snapshot.val() || 0;
                 await set(allegianceRef, currentCount + 1);
 
                 // Add vote announcement to chat
+                console.log('Adding vote announcement...');
                 const voteMessage = {
                     type: 'user',
                     speaker: 'SYSTEM',
@@ -499,6 +506,7 @@
                 disableVotingButtons();
                 
                 console.log(`Successfully joined ${side} allegiance!`);
+                alert(`Successfully joined the ${side.toUpperCase()} allegiance!`);
                 
             } catch (error) {
                 console.error('Error joining allegiance:', error);
