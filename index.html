@@ -404,8 +404,8 @@
             try {
                 const response = await fetch('https://api.ipify.org?format=json');
                 const data = await response.json();
-                userIP = data.ip;
-                console.log('User IP:', userIP);
+                userIP = data.ip.replace(/\./g, '_'); // Replace dots with underscores for Firebase
+                console.log('User IP (encoded):', userIP);
                 checkIfUserVoted();
             } catch (error) {
                 console.error('Error getting IP:', error);
@@ -470,12 +470,12 @@
             try {
                 const { database, ref, push, set, get } = window.firebase;
                 
-                // Record the vote
+                // Record the vote with encoded IP
                 const votersRef = ref(database, `voters/${userIP}`);
                 await set(votersRef, {
                     side: side,
                     timestamp: Date.now(),
-                    ip: userIP
+                    encodedIP: userIP
                 });
 
                 // Update allegiance count
@@ -497,6 +497,8 @@
 
                 hasVoted = true;
                 disableVotingButtons();
+                
+                console.log(`Successfully joined ${side} allegiance!`);
                 
             } catch (error) {
                 console.error('Error joining allegiance:', error);
