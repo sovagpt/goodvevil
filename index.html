@@ -85,6 +85,8 @@
             background: #000000;
             border: 2px solid #ffffff;
             border-radius: 8px;
+            display: flex;
+            flex-direction: column;
         }
         
         .message {
@@ -342,7 +344,7 @@
         </div>
         
         <!-- Messages Container -->
-        <div id="messages-container" class="h-4/6 overflow-y-auto p-4 scrollbar-custom">
+        <div id="messages-container" class="flex-1 overflow-y-auto p-4 scrollbar-custom">
             <div class="message good-msg">
                 <div class="font-bold mb-1">GoodAI:</div>
                 <div>Welcome to your personal debate session. I believe in compassion, truth, and human potential. What philosophical question weighs on your mind?</div>
@@ -354,7 +356,7 @@
         </div>
         
         <!-- Input Area -->
-        <div class="input-area">
+        <div class="input-area flex-shrink-0">
             <div class="flex">
                 <input
                     type="text"
