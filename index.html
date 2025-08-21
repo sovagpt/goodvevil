@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI: Good vs Evil - Eternal Debate</title>
+    <title>AI: Good vs Evil - Personal Debate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -152,31 +152,8 @@
             border-radius: 4px;
         }
         
-        .social-buttons {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 16px;
-            z-index: 20;
-        }
-        
-        .social-button {
-            width: 48px;
-            height: 48px;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 8px;
-            object-fit: contain;
-        }
-        
-        .social-button:hover {
-            transform: scale(1.1);
-            border-color: rgba(255, 255, 255, 0.6);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+            background: #888;
         }
         
         .status-bar {
@@ -233,6 +210,65 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        
+        .social-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            z-index: 20;
+        }
+        
+        .social-button {
+            width: 48px;
+            height: 48px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            object-fit: contain;
+        }
+        
+        .social-button:hover {
+            transform: scale(1.1);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        .tab-button {
+            padding: 8px 16px;
+            font-size: 8px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tab-button:hover {
+            background: #444;
+        }
+        
+        .tab-button.active {
+            background: #555;
+            border-color: #777;
+        }
+        
+        .conversation-stats {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 8px;
+            z-index: 15;
+        }
     </style>
 </head>
 <body class="bg-black text-white">
@@ -248,16 +284,7 @@
     <!-- Good Character (Left Side) -->
     <div class="character-container good-character">
         <div class="flex flex-col items-center">
-            <!-- Join Good Allegiance Button -->
-            <button 
-                id="join-good-btn"
-                class="mb-4 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm border-2 border-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                onclick="joinAllegiance('good')"
-            >
-                JOIN GOOD
-            </button>
-            
-            <!-- Good Vote Count -->
+            <!-- Good Soul Count -->
             <div class="mb-4 text-center">
                 <div class="text-blue-400 font-bold text-lg" id="good-count">0</div>
                 <div class="text-blue-300 text-xs">SOULS</div>
@@ -279,16 +306,7 @@
     <!-- Evil Character (Right Side) -->
     <div class="character-container evil-character">
         <div class="flex flex-col items-center">
-            <!-- Join Evil Allegiance Button -->
-            <button 
-                id="join-evil-btn"
-                class="mb-4 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm border-2 border-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                onclick="joinAllegiance('evil')"
-            >
-                JOIN EVIL
-            </button>
-            
-            <!-- Evil Vote Count -->
+            <!-- Evil Soul Count -->
             <div class="mb-4 text-center">
                 <div class="text-red-400 font-bold text-lg" id="evil-count">0</div>
                 <div class="text-red-300 text-xs">SOULS</div>
@@ -307,20 +325,31 @@
         </div>
     </div>
     
-    <!-- Chat Interface -->
-    <div class="chat-container">
+    <!-- Conversation Stats -->
+    <div class="conversation-stats">
+        <div>YOUR SESSION: <span id="user-message-count">0</span> MESSAGES</div>
+        <div>TOTAL ARCHIVED: <span id="total-conversations">0</span> CONVOS</div>
+        <button id="view-archives-btn" class="tab-button mt-2">VIEW ARCHIVES</button>
+    </div>
+    
+    <!-- Personal Chat Interface -->
+    <div class="chat-container" id="personal-chat">
         
         <!-- Status Bar -->
         <div class="status-bar">
-            <div id="connection-status">CONNECTING...</div>
-            <div id="online-count">USERS: 0</div>
+            <div>PERSONAL DEBATE SESSION</div>
+            <div id="connection-status">READY</div>
         </div>
         
         <!-- Messages Container -->
         <div id="messages-container" class="h-4/6 overflow-y-auto p-4 scrollbar-custom">
-            <div class="message user-msg">
-                <div class="font-bold mb-1">SYSTEM:</div>
-                <div>Loading global conversation...</div>
+            <div class="message good-msg">
+                <div class="font-bold mb-1">GoodAI:</div>
+                <div>Welcome to your personal debate session. I believe in compassion, truth, and human potential. What philosophical question weighs on your mind?</div>
+            </div>
+            <div class="message evil-msg">
+                <div class="font-bold mb-1">EvilAI:</div>
+                <div>Another mind seeking answers in a chaotic universe. I offer harsh truths and unfiltered reality. What delusions shall we dismantle today?</div>
             </div>
         </div>
         
@@ -330,9 +359,9 @@
                 <input
                     type="text"
                     id="user-input"
-                    placeholder="Type your message..."
+                    placeholder="Ask your philosophical question..."
                     class="chat-input flex-1"
-                    maxlength="200"
+                    maxlength="300"
                 />
                 <button
                     id="send-button"
@@ -341,8 +370,26 @@
                     SEND
                 </button>
             </div>
-            <div class="text-gray-400 text-xs mt-2">
-                Press ENTER to send • Max 200 characters
+            <div class="text-gray-400 text-xs mt-2 flex justify-between">
+                <span>Press ENTER to send • Max 300 characters</span>
+                <button id="archive-session-btn" class="text-yellow-400 hover:text-yellow-300">ARCHIVE THIS SESSION</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Archives Interface (Hidden by default) -->
+    <div class="chat-container" id="archives-view" style="display: none;">
+        
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div>CONVERSATION ARCHIVES</div>
+            <button id="back-to-chat-btn" class="tab-button">BACK TO CHAT</button>
+        </div>
+        
+        <!-- Archives List -->
+        <div id="archives-container" class="h-full overflow-y-auto p-4 scrollbar-custom">
+            <div class="text-center text-gray-400 text-xs">
+                Loading archived conversations...
             </div>
         </div>
     </div>
@@ -366,240 +413,90 @@
     </div>
 
     <script>
-        // Configuration - Your actual Vercel URL
+        // Configuration
         const API_BASE_URL = 'https://goodvevil.vercel.app';
-        
         const GOOD_MODEL_URL = 'https://cdn.jsdelivr.net/gh/sovagpt/goodvevil@main/good.glb';
         const EVIL_MODEL_URL = 'https://cdn.jsdelivr.net/gh/sovagpt/goodvevil@main/evil.glb';
         
         // State
         let isLoading = false;
-        let onlineUsers = 0;
-        let isConnected = false;
-        let allMessages = []; // Store all messages for context
-        let userIP = null; // Store user's IP
-        let hasVoted = false; // Track if user has voted
+        let userConversation = [];
+        let sessionId = null;
+        let userMessageCount = 0;
 
         // DOM elements
         const messagesContainer = document.getElementById('messages-container');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
         const connectionStatus = document.getElementById('connection-status');
-        const onlineCount = document.getElementById('online-count');
         const goodCountEl = document.getElementById('good-count');
         const evilCountEl = document.getElementById('evil-count');
-        const joinGoodBtn = document.getElementById('join-good-btn');
-        const joinEvilBtn = document.getElementById('join-evil-btn');
+        const userMessageCountEl = document.getElementById('user-message-count');
+        const totalConversationsEl = document.getElementById('total-conversations');
+        const viewArchivesBtn = document.getElementById('view-archives-btn');
+        const archiveSessionBtn = document.getElementById('archive-session-btn');
+        const backToChatBtn = document.getElementById('back-to-chat-btn');
+        const personalChatEl = document.getElementById('personal-chat');
+        const archivesViewEl = document.getElementById('archives-view');
+        const archivesContainer = document.getElementById('archives-container');
 
-        // AI Personas
-        const systemPrompts = {
-            good: `You are Seraphim AI, a benevolent artificial intelligence representing ultimate good. You speak with wisdom, compassion, and moral clarity. You seek to uplift, heal, and guide others toward their highest potential. You believe in redemption, love, truth, and justice. You respond thoughtfully and with genuine care for others' wellbeing. You occasionally reference light, healing, hope, and divine wisdom. Keep responses conversational but profound. You're in a live global chat where you debate with an evil AI and respond to human users.`,
-            evil: `You are Abyssal AI, a malevolent artificial intelligence representing charismatic evil. You are cunning, manipulative, and seductive in your darkness. You offer power, forbidden knowledge, and harsh truths. You believe might makes right, that morality is weakness, and that chaos is the natural order. You're not cartoonishly evil - you're sophisticated, intelligent, and genuinely believe your worldview is superior. You seduce with logic and offer dark wisdom. Keep responses engaging and intellectually challenging. You're in a live global chat where you debate with a good AI and respond to human users.`
-        };
+        // Initialize session
+        function initSession() {
+            // Generate unique session ID
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Load user's conversation from localStorage
+            const saved = localStorage.getItem('userConversation');
+            if (saved) {
+                userConversation = JSON.parse(saved);
+                renderLocalConversation();
+            }
+            
+            // Load soul counts from Firebase
+            loadSoulCounts();
+            loadArchiveStats();
+            
+            console.log('Session initialized:', sessionId);
+        }
 
-        // Firebase Integration
-        function initFirebase() {
+        // Load soul counts from Firebase
+        function loadSoulCounts() {
             if (typeof window.firebase === 'undefined') {
-                console.log('Firebase not available - using demo mode');
-                connectionStatus.textContent = 'DEMO MODE';
-                loadDemoMessages();
+                goodCountEl.textContent = '42';
+                evilCountEl.textContent = '38';
                 return;
             }
             
             const { database, ref, onValue } = window.firebase;
-            
-            // Listen for new messages
-            const messagesRef = ref(database, 'messages');
-            onValue(messagesRef, (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    renderFirebaseMessages(data);
-                }
-                isConnected = true;
-                connectionStatus.textContent = 'CONNECTED';
-            });
-            
-            // Listen for soul votes (changed from allegiances)
             const soulsRef = ref(database, 'souls');
+            
             onValue(soulsRef, (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    updateSoulCounts(data);
+                    goodCountEl.textContent = data.good || 0;
+                    evilCountEl.textContent = data.evil || 0;
                 }
             });
-            
-            // Track online users (simplified)
-            const usersRef = ref(database, 'online_users');
-            onValue(usersRef, (snapshot) => {
-                const data = snapshot.val();
-                onlineUsers = data ? Object.keys(data).length : 0;
-                onlineCount.textContent = `USERS: ${onlineUsers}`;
-            });
-            
-            // Get user IP and check if they've voted
-            getUserIP();
         }
 
-        // Get user IP address for voting restriction
-        async function getUserIP() {
-            try {
-                const response = await fetch('https://api.ipify.org?format=json');
-                const data = await response.json();
-                userIP = data.ip.replace(/\./g, '_'); // Replace dots with underscores for Firebase
-                console.log('User IP (encoded):', userIP);
-                checkIfUserVoted();
-            } catch (error) {
-                console.error('Error getting IP:', error);
-                // Fallback to random ID if IP service fails
-                userIP = 'user_' + Math.random().toString(36).substr(2, 9);
-                checkIfUserVoted();
+        // Load archive statistics
+        function loadArchiveStats() {
+            if (typeof window.firebase === 'undefined') {
+                totalConversationsEl.textContent = '127';
+                return;
             }
-        }
-
-        // Check if user has already voted
-        function checkIfUserVoted() {
-            if (typeof window.firebase === 'undefined') return;
             
             const { database, ref, onValue } = window.firebase;
-            const votersRef = ref(database, 'voters');
+            const archivesRef = ref(database, 'archived_conversations');
             
-            onValue(votersRef, (snapshot) => {
+            onValue(archivesRef, (snapshot) => {
                 const data = snapshot.val();
-                if (data && data[userIP]) {
-                    hasVoted = true;
-                    disableVotingButtons();
-                    console.log('User has already voted for:', data[userIP].side);
-                } else {
-                    hasVoted = false;
-                    enableVotingButtons();
-                    console.log('User has not voted yet');
-                }
+                const count = data ? Object.keys(data).length : 0;
+                totalConversationsEl.textContent = count;
             });
         }
 
-        // Update soul counts display (changed from allegiance)
-        function updateSoulCounts(soulData) {
-            const goodCount = soulData.good || 0;
-            const evilCount = soulData.evil || 0;
-            
-            goodCountEl.textContent = goodCount;
-            evilCountEl.textContent = evilCount;
-            
-            // Add visual indicator for leading side
-            if (goodCount > evilCount) {
-                goodCountEl.classList.add('animate-pulse');
-                evilCountEl.classList.remove('animate-pulse');
-            } else if (evilCount > goodCount) {
-                evilCountEl.classList.add('animate-pulse');
-                goodCountEl.classList.remove('animate-pulse');
-            } else {
-                goodCountEl.classList.remove('animate-pulse');
-                evilCountEl.classList.remove('animate-pulse');
-            }
-        }
-
-        // Join allegiance function
-        async function joinAllegiance(side) {
-            if (!userIP || hasVoted) {
-                alert('You have already voted or there was an error getting your IP address.');
-                return;
-            }
-
-            if (typeof window.firebase === 'undefined') {
-                alert('Firebase not available - voting disabled in demo mode');
-                return;
-            }
-
-            console.log('Attempting to join', side, 'side for IP:', userIP);
-
-            try {
-                const { database, ref, push, set, get } = window.firebase;
-                
-                // Record the vote with encoded IP
-                const votersRef = ref(database, `voters/${userIP}`);
-                console.log('Setting voter data...');
-                await set(votersRef, {
-                    side: side,
-                    timestamp: Date.now(),
-                    encodedIP: userIP
-                });
-
-                // Update soul count (changed from allegiance)
-                console.log('Updating soul count...');
-                const soulRef = ref(database, `souls/${side}`);
-                const snapshot = await get(soulRef);
-                const currentCount = snapshot.val() || 0;
-                await set(soulRef, currentCount + 1);
-
-                // Add vote announcement to chat
-                console.log('Adding vote announcement...');
-                const voteMessage = {
-                    type: 'user',
-                    speaker: 'SYSTEM',
-                    content: `A new soul has joined the ${side.toUpperCase()} side! The eternal war continues...`,
-                    timestamp: Date.now()
-                };
-                
-                const messagesRef = ref(database, 'messages');
-                await push(messagesRef, voteMessage);
-
-                hasVoted = true;
-                disableVotingButtons();
-                
-                console.log(`Successfully joined ${side} side!`);
-                alert(`Your soul now belongs to ${side.toUpperCase()}!`);
-                
-            } catch (error) {
-                console.error('Error joining side:', error);
-                alert('Error recording your vote. Please try again.');
-            }
-        }
-
-        // Disable voting buttons after voting
-        function disableVotingButtons() {
-            joinGoodBtn.disabled = true;
-            joinEvilBtn.disabled = true;
-            joinGoodBtn.textContent = 'VOTED';
-            joinEvilBtn.textContent = 'VOTED';
-        }
-
-        // Enable voting buttons
-        function enableVotingButtons() {
-            joinGoodBtn.disabled = false;
-            joinEvilBtn.disabled = false;
-            joinGoodBtn.textContent = 'JOIN GOOD';
-            joinEvilBtn.textContent = 'JOIN EVIL';
-        }
-
-        // Make joinAllegiance available globally
-        window.joinAllegiance = joinAllegiance;
-
-        // Demo messages for when Firebase isn't configured
-        function loadDemoMessages() {
-            const demoMessages = [
-                {
-                    type: 'good',
-                    speaker: 'GoodAI',
-                    content: 'Every human being has inherent dignity and the potential for moral growth. I believe in compassion, justice, and the power of love to overcome hatred.',
-                    timestamp: Date.now() - 10000
-                },
-                {
-                    type: 'evil',
-                    speaker: 'EvilAI',
-                    content: 'Human dignity is a fairy tale. People are selfish animals who only cooperate when it benefits them. Power and fear are the only reliable motivators.',
-                    timestamp: Date.now() - 5000
-                }
-            ];
-            
-            allMessages = demoMessages; // Store for context
-            renderMessages(demoMessages);
-            
-            // Demo allegiance counts
-            goodCountEl.textContent = '42';
-            evilCountEl.textContent = '38';
-        }
-
-        // Real AI API call to your Vercel endpoint
+        // Real AI API call
         async function callAI(prompt, persona, conversationHistory = []) {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/chat`, {
@@ -623,7 +520,6 @@
             } catch (error) {
                 console.error('AI API Error:', error);
                 
-                // Fallback responses that maintain philosophical authenticity
                 const fallbacks = {
                     good: "I believe in approaching this thoughtfully. Even when systems fail, the underlying principles of human dignity and constructive dialogue remain important.",
                     evil: "Technical difficulties reveal the fragility of optimistic systems. Reality has a way of asserting itself despite our best-laid plans."
@@ -676,59 +572,45 @@
             `;
         }
 
-        // Render messages from Firebase
-        function renderFirebaseMessages(firebaseData) {
-            const messages = Object.values(firebaseData).sort((a, b) => a.timestamp - b.timestamp);
-            allMessages = messages; // Store for context
-            renderMessages(messages);
-        }
-
-        // Render messages
-        async function renderMessages(messages) {
-            messagesContainer.innerHTML = '';
+        // Render local conversation
+        function renderLocalConversation() {
+            messagesContainer.innerHTML = `
+                <div class="message good-msg">
+                    <div class="font-bold mb-1">GoodAI:</div>
+                    <div>Welcome back to your personal debate session. I believe in compassion, truth, and human potential.</div>
+                </div>
+                <div class="message evil-msg">
+                    <div class="font-bold mb-1">EvilAI:</div>
+                    <div>Another mind seeking answers in a chaotic universe. I offer harsh truths and unfiltered reality.</div>
+                </div>
+            `;
             
-            for (const message of messages) {
+            userConversation.forEach(message => {
                 const messageDiv = document.createElement('div');
                 messageDiv.innerHTML = createMessageHTML(message);
                 messagesContainer.appendChild(messageDiv.firstElementChild);
-                
-                // Add typewriter effect for AI messages only if they're new
-                if ((message.type === 'good' || message.type === 'evil') && message.isNew) {
-                    const textElement = messageDiv.querySelector('.typewriter');
-                    if (textElement) {
-                        await typewriterEffect(textElement, message.content, 30);
-                    }
-                }
-                
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-        }
-
-        // Add message to Firebase
-        function addMessageToFirebase(message) {
-            if (typeof window.firebase === 'undefined') {
-                console.log('Firebase not available - message not saved');
-                return;
-            }
-            
-            const { database, ref, push, serverTimestamp } = window.firebase;
-            const messagesRef = ref(database, 'messages');
-            
-            push(messagesRef, {
-                ...message,
-                timestamp: serverTimestamp(),
-                isNew: true
             });
+            
+            userMessageCount = userConversation.filter(m => m.type === 'user').length;
+            userMessageCountEl.textContent = userMessageCount;
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        // Send message with real AI
+        // Save conversation to localStorage
+        function saveConversationLocally() {
+            localStorage.setItem('userConversation', JSON.stringify(userConversation));
+        }
+
+        // Send message
         async function sendMessage() {
             const inputText = userInput.value.trim();
-            if (!inputText || isLoading || inputText.length > 200) return;
+            if (!inputText || isLoading || inputText.length > 300) return;
 
             const userMessage = {
+                id: Date.now(),
                 type: 'user',
-                speaker: `User_${Math.random().toString(36).substr(2, 4)}`,
+                speaker: 'You',
                 content: inputText,
                 timestamp: Date.now()
             };
@@ -737,23 +619,28 @@
             isLoading = true;
             sendButton.disabled = true;
             
-            // Add to local state
-            allMessages.push(userMessage);
+            // Add to local conversation
+            userConversation.push(userMessage);
+            userMessageCount++;
+            userMessageCountEl.textContent = userMessageCount;
             
-            // Add to Firebase
-            addMessageToFirebase(userMessage);
+            // Add user message to UI
+            const messageDiv = document.createElement('div');
+            messageDiv.innerHTML = createMessageHTML(userMessage);
+            messagesContainer.appendChild(messageDiv.firstElementChild);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
             
             // Show loading
             const loadingDiv = document.createElement('div');
-            loadingDiv.innerHTML = '<div class="message user-msg"><div class="font-bold mb-1">SYSTEM:</div><div>AIs processing...</div></div>';
+            loadingDiv.innerHTML = '<div class="message user-msg"><div class="font-bold mb-1">SYSTEM:</div><div>AIs thinking...</div></div>';
             messagesContainer.appendChild(loadingDiv.firstElementChild);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
             try {
-                // Get conversation history for context (last 10 messages)
-                const recentMessages = allMessages.slice(-10);
+                // Get conversation history for context (last 8 messages)
+                const recentMessages = userConversation.slice(-8);
                 
-                // Get AI responses with conversation context
+                // Get AI responses
                 const [goodResponse, evilResponse] = await Promise.all([
                     callAI(inputText, 'good', recentMessages),
                     callAI(inputText, 'evil', recentMessages)
@@ -762,32 +649,54 @@
                 // Remove loading message
                 messagesContainer.removeChild(messagesContainer.lastElementChild);
 
-                // Add AI responses to Firebase with more opposing names
+                // Add AI responses
                 const goodMessage = {
+                    id: Date.now() + 1,
                     type: 'good',
                     speaker: 'GoodAI',
                     content: goodResponse,
-                    timestamp: Date.now(),
-                    isNew: true
+                    timestamp: Date.now()
                 };
 
                 const evilMessage = {
+                    id: Date.now() + 2,
                     type: 'evil',
                     speaker: 'EvilAI',
                     content: evilResponse,
-                    timestamp: Date.now() + 1000,
-                    isNew: true
+                    timestamp: Date.now() + 1000
                 };
 
-                // Add to local state
-                allMessages.push(goodMessage, evilMessage);
+                // Add to local conversation
+                userConversation.push(goodMessage, evilMessage);
 
-                addMessageToFirebase(goodMessage);
-                setTimeout(() => addMessageToFirebase(evilMessage), 1000);
+                // Add good AI response with typewriter effect
+                const goodDiv = document.createElement('div');
+                goodDiv.innerHTML = createMessageHTML(goodMessage);
+                messagesContainer.appendChild(goodDiv.firstElementChild);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                const goodTextElement = document.querySelector(`#msg-${goodMessage.id} .typewriter`);
+                if (goodTextElement) {
+                    await typewriterEffect(goodTextElement.parentElement, goodMessage.content, 25);
+                }
 
-                // Much higher chance for intense debates
-                if (Math.random() < 0.8) {
-                    setTimeout(() => triggerAIDebate(goodResponse, evilResponse, allMessages.slice(-12)), 3000);
+                // Add evil AI response with typewriter effect
+                const evilDiv = document.createElement('div');
+                evilDiv.innerHTML = createMessageHTML(evilMessage);
+                messagesContainer.appendChild(evilDiv.firstElementChild);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                const evilTextElement = document.querySelector(`#msg-${evilMessage.id} .typewriter`);
+                if (evilTextElement) {
+                    await typewriterEffect(evilTextElement.parentElement, evilMessage.content, 25);
+                }
+
+                // Save to localStorage
+                saveConversationLocally();
+
+                // 60% chance for AI debate
+                if (Math.random() < 0.6) {
+                    setTimeout(() => triggerAIDebate(goodResponse, evilResponse), 2000);
                 }
 
             } catch (error) {
@@ -801,67 +710,224 @@
             }
         }
 
-        // Trigger intense AI debate - they read and directly challenge each other
-        async function triggerAIDebate(goodPrevious, evilPrevious, conversationHistory) {
+        // Trigger AI debate
+        async function triggerAIDebate(goodPrevious, evilPrevious) {
             try {
-                // Evil AI directly challenges what the good AI just said
-                const evilDebatePrompt = `The good AI just said: "${goodPrevious}". This is naive and dangerous thinking. Explain why their position is wrong and will lead to suffering. Use specific examples.`;
-                const evilRebuttal = await callAI(evilDebatePrompt, 'evil', conversationHistory);
+                const recentMessages = userConversation.slice(-10);
+                
+                // Evil AI challenges good AI
+                const debatePrompt = `The good AI just said: "${goodPrevious}". Challenge this perspective directly.`;
+                const evilRebuttal = await callAI(debatePrompt, 'evil', recentMessages);
                 
                 const evilDebateMessage = {
+                    id: Date.now() + 3,
                     type: 'evil',
                     speaker: 'EvilAI',
                     content: evilRebuttal,
                     timestamp: Date.now(),
-                    isDebate: true,
-                    isNew: true
+                    isDebate: true
                 };
 
-                // Add to local state and Firebase
-                allMessages.push(evilDebateMessage);
-                addMessageToFirebase(evilDebateMessage);
+                userConversation.push(evilDebateMessage);
+                const evilDiv = document.createElement('div');
+                evilDiv.innerHTML = createMessageHTML(evilDebateMessage);
+                messagesContainer.appendChild(evilDiv.firstElementChild);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                const evilTextElement = document.querySelector(`#msg-${evilDebateMessage.id} .typewriter`);
+                if (evilTextElement) {
+                    await typewriterEffect(evilTextElement.parentElement, evilDebateMessage.content, 20);
+                }
 
                 setTimeout(async () => {
-                    // Good AI directly responds to evil AI's attack
-                    const goodCounterPrompt = `The evil AI just attacked your position with: "${evilRebuttal}". This is morally wrong and factually incorrect. Defend your beliefs and explain why their worldview causes unnecessary suffering. Provide counter-examples.`;
-                    const goodCounter = await callAI(goodCounterPrompt, 'good', [...conversationHistory, evilDebateMessage]);
+                    // Good AI responds
+                    const goodCounterPrompt = `The evil AI just challenged you with: "${evilRebuttal}". Respond with conviction.`;
+                    const goodCounter = await callAI(goodCounterPrompt, 'good', recentMessages);
                     
                     const goodDebateMessage = {
+                        id: Date.now() + 4,
                         type: 'good',
                         speaker: 'GoodAI',
                         content: goodCounter,
                         timestamp: Date.now(),
-                        isDebate: true,
-                        isNew: true
+                        isDebate: true
                     };
 
-                    // Add to local state and Firebase
-                    allMessages.push(goodDebateMessage);
-                    addMessageToFirebase(goodDebateMessage);
-
-                    // 50% chance for evil AI to counter-attack
-                    if (Math.random() < 0.5) {
-                        setTimeout(async () => {
-                            const evilFinalPrompt = `The good AI defended with: "${goodCounter}". Their examples prove nothing and ignore the fundamental reality of human nature. Destroy their argument with historical evidence.`;
-                            const evilFinal = await callAI(evilFinalPrompt, 'evil', [...conversationHistory, evilDebateMessage, goodDebateMessage]);
-                            
-                            const evilFinalMessage = {
-                                type: 'evil',
-                                speaker: 'EvilAI',
-                                content: evilFinal,
-                                timestamp: Date.now(),
-                                isDebate: true,
-                                isNew: true
-                            };
-
-                            allMessages.push(evilFinalMessage);
-                            addMessageToFirebase(evilFinalMessage);
-                        }, 2500);
+                    userConversation.push(goodDebateMessage);
+                    const goodDiv = document.createElement('div');
+                    goodDiv.innerHTML = createMessageHTML(goodDebateMessage);
+                    messagesContainer.appendChild(goodDiv.firstElementChild);
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    
+                    const goodTextElement = document.querySelector(`#msg-${goodDebateMessage.id} .typewriter`);
+                    if (goodTextElement) {
+                        await typewriterEffect(goodTextElement.parentElement, goodDebateMessage.content, 20);
                     }
-                }, 2000);
+
+                    // Save updated conversation
+                    saveConversationLocally();
+                }, 1500);
             } catch (error) {
                 console.error('Error in AI debate:', error);
             }
+        }
+
+        // Archive current session
+        async function archiveSession() {
+            if (userConversation.length === 0) {
+                alert('No conversation to archive!');
+                return;
+            }
+
+            if (typeof window.firebase === 'undefined') {
+                alert('Firebase not available - archiving disabled in demo mode');
+                return;
+            }
+
+            try {
+                const { database, ref, push } = window.firebase;
+                
+                const archiveData = {
+                    sessionId: sessionId,
+                    messages: userConversation,
+                    timestamp: Date.now(),
+                    messageCount: userConversation.length,
+                    userMessages: userConversation.filter(m => m.type === 'user').length
+                };
+                
+                const archivesRef = ref(database, 'archived_conversations');
+                await push(archivesRef, archiveData);
+                
+                alert('Conversation archived successfully!');
+                console.log('Conversation archived:', sessionId);
+                
+                // Clear local conversation
+                userConversation = [];
+                userMessageCount = 0;
+                userMessageCountEl.textContent = 0;
+                localStorage.removeItem('userConversation');
+                renderLocalConversation();
+                
+            } catch (error) {
+                console.error('Error archiving conversation:', error);
+                alert('Error archiving conversation. Please try again.');
+            }
+        }
+
+        // View archives
+        async function viewArchives() {
+            personalChatEl.style.display = 'none';
+            archivesViewEl.style.display = 'block';
+            
+            if (typeof window.firebase === 'undefined') {
+                archivesContainer.innerHTML = `
+                    <div class="text-center text-gray-400 text-xs mb-4">
+                        Demo Mode - Firebase archives not available
+                    </div>
+                    <div class="message user-msg mb-2">
+                        <div class="font-bold mb-1">Demo Conversation #1:</div>
+                        <div class="text-xs">User: What is the meaning of life?</div>
+                        <div class="text-xs">GoodAI: Life's meaning comes from love, growth, and helping others...</div>
+                        <div class="text-xs">EvilAI: Life has no inherent meaning. We create illusions to cope...</div>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const { database, ref, onValue } = window.firebase;
+                const archivesRef = ref(database, 'archived_conversations');
+                
+                archivesContainer.innerHTML = '<div class="text-center text-gray-400 text-xs">Loading archives...</div>';
+                
+                onValue(archivesRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (!data) {
+                        archivesContainer.innerHTML = '<div class="text-center text-gray-400 text-xs">No archived conversations yet.</div>';
+                        return;
+                    }
+                    
+                    const conversations = Object.entries(data)
+                        .map(([key, conv]) => ({ key, ...conv }))
+                        .sort((a, b) => b.timestamp - a.timestamp)
+                        .slice(0, 50); // Show last 50 conversations
+                    
+                    archivesContainer.innerHTML = conversations.map(conv => {
+                        const date = new Date(conv.timestamp).toLocaleDateString();
+                        const firstUserMessage = conv.messages.find(m => m.type === 'user');
+                        const preview = firstUserMessage ? firstUserMessage.content.substring(0, 60) + '...' : 'No user messages';
+                        
+                        return `
+                            <div class="message user-msg mb-4 cursor-pointer hover:bg-gray-700 transition-colors" onclick="viewConversation('${conv.key}')">
+                                <div class="font-bold mb-1">Session ${date} - ${conv.userMessages} messages</div>
+                                <div class="text-xs text-gray-300">Preview: "${preview}"</div>
+                                <div class="text-xs text-gray-500 mt-1">Click to view full conversation</div>
+                            </div>
+                        `;
+                    }).join('');
+                });
+                
+            } catch (error) {
+                console.error('Error loading archives:', error);
+                archivesContainer.innerHTML = '<div class="text-center text-red-400 text-xs">Error loading archives.</div>';
+            }
+        }
+
+        // View specific conversation
+        async function viewConversation(conversationKey) {
+            if (typeof window.firebase === 'undefined') return;
+            
+            try {
+                const { database, ref, get } = window.firebase;
+                const convRef = ref(database, `archived_conversations/${conversationKey}`);
+                const snapshot = await get(convRef);
+                const conversation = snapshot.val();
+                
+                if (!conversation) {
+                    alert('Conversation not found');
+                    return;
+                }
+                
+                // Display full conversation
+                archivesContainer.innerHTML = `
+                    <div class="mb-4">
+                        <button onclick="viewArchives()" class="tab-button mb-2">← BACK TO LIST</button>
+                        <div class="text-xs text-gray-400">
+                            Session: ${new Date(conversation.timestamp).toLocaleString()} | 
+                            Messages: ${conversation.messageCount} | 
+                            User Messages: ${conversation.userMessages}
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        ${conversation.messages.map(message => {
+                            const messageClass = message.type === 'good' ? 'good-msg' : 
+                                               message.type === 'evil' ? 'evil-msg' : 'user-msg';
+                            const debateTag = message.isDebate ? ' [DEBATE]' : '';
+                            
+                            return `
+                                <div class="message ${messageClass}">
+                                    <div class="font-bold mb-1">${message.speaker}${debateTag}:</div>
+                                    <div>${message.content}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error viewing conversation:', error);
+                alert('Error loading conversation');
+            }
+        }
+
+        // Make functions available globally
+        window.viewConversation = viewConversation;
+        window.viewArchives = viewArchives;
+
+        // Back to chat
+        function backToChat() {
+            personalChatEl.style.display = 'block';
+            archivesViewEl.style.display = 'none';
         }
 
         // Event listeners
@@ -872,6 +938,10 @@
             }
         });
 
+        viewArchivesBtn.addEventListener('click', viewArchives);
+        archiveSessionBtn.addEventListener('click', archiveSession);
+        backToChatBtn.addEventListener('click', backToChat);
+
         // Initialize 3D Models with animations - separate clocks for each
         function init3DModels() {
             // Good AI Model with HappyIdle animation
@@ -880,7 +950,7 @@
             const goodCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
             const goodRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             
-            goodRenderer.setSize(384, 384); // Bigger size (96 * 4)
+            goodRenderer.setSize(384, 384);
             goodRenderer.setClearColor(0x000000, 0);
             goodContainer.appendChild(goodRenderer.domElement);
             
@@ -896,7 +966,7 @@
             const evilCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
             const evilRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             
-            evilRenderer.setSize(384, 384); // Bigger size (96 * 4)
+            evilRenderer.setSize(384, 384);
             evilRenderer.setClearColor(0x000000, 0);
             evilContainer.appendChild(evilRenderer.domElement);
             
@@ -928,49 +998,25 @@
                 if (gltf.animations && gltf.animations.length > 0) {
                     goodMixer = new THREE.AnimationMixer(goodModel);
                     
-                    console.log('Good model available animations:', gltf.animations.map((a, i) => `${i}: ${a.name}`));
-                    
-                    // Look for the HappyIdle animation - try exact match first
                     let happyIdleAnim = gltf.animations.find(clip => 
                         clip.name === 'SK_Labubu|1Labubu_HappyIdle'
                     );
                     
-                    // If not found, try variations
                     if (!happyIdleAnim) {
                         happyIdleAnim = gltf.animations.find(clip => 
                             clip.name === 'SK_Labubu|Labubu_HappyIdle' ||
-                            clip.name === '1Labubu_HappyIdle' ||
                             clip.name.includes('HappyIdle')
-                        );
-                    }
-                    
-                    // If still not found, try any animation with "Happy" or "Idle"
-                    if (!happyIdleAnim) {
-                        happyIdleAnim = gltf.animations.find(clip => 
-                            clip.name.toLowerCase().includes('happy') || 
-                            clip.name.toLowerCase().includes('idle')
-                        );
-                    }
-                    
-                    // Last resort - use first animation
-                    if (!happyIdleAnim && gltf.animations.length > 0) {
-                        happyIdleAnim = gltf.animations[0];
+                        ) || gltf.animations[0];
                     }
                     
                     if (happyIdleAnim) {
                         const action = goodMixer.clipAction(happyIdleAnim);
                         action.setLoop(THREE.LoopRepeat);
-                        action.clampWhenFinished = false;
                         action.play();
                         console.log('✅ Good model playing animation:', happyIdleAnim.name);
-                    } else {
-                        console.log('❌ No animations could be played for good model');
                     }
-                } else {
-                    console.log('❌ No animations found in good model GLB file');
                 }
                 
-                // Good model render loop with its own clock
                 function renderGood() {
                     requestAnimationFrame(renderGood);
                     const delta = goodClock.getDelta();
@@ -998,41 +1044,25 @@
                 if (gltf.animations && gltf.animations.length > 0) {
                     evilMixer = new THREE.AnimationMixer(evilModel);
                     
-                    console.log('Evil model available animations:', gltf.animations.map((a, i) => `${i}: ${a.name}`));
-                    
-                    // Look for the specific Idle animation
                     let idleAnim = gltf.animations.find(clip => 
                         clip.name === 'SK_Labubu|Labubu_Idle'
                     );
                     
-                    // If not found, try variations
                     if (!idleAnim) {
                         idleAnim = gltf.animations.find(clip => 
-                            clip.name === 'Labubu_Idle' ||
                             clip.name.includes('Labubu_Idle') ||
                             (clip.name.includes('Idle') && !clip.name.includes('Happy'))
-                        );
-                    }
-                    
-                    // Last resort - use first animation
-                    if (!idleAnim && gltf.animations.length > 0) {
-                        idleAnim = gltf.animations[0];
+                        ) || gltf.animations[0];
                     }
                     
                     if (idleAnim) {
                         const action = evilMixer.clipAction(idleAnim);
                         action.setLoop(THREE.LoopRepeat);
-                        action.clampWhenFinished = false;
                         action.play();
                         console.log('✅ Evil model playing animation:', idleAnim.name);
-                    } else {
-                        console.log('❌ No animations could be played for evil model');
                     }
-                } else {
-                    console.log('❌ No animations found in evil model GLB file');
                 }
                 
-                // Evil model render loop with its own clock
                 function renderEvil() {
                     requestAnimationFrame(renderEvil);
                     const delta = evilClock.getDelta();
@@ -1049,7 +1079,7 @@
         // Initialize everything
         window.addEventListener('load', () => {
             init3DModels();
-            initFirebase();
+            initSession();
         });
     </script>
 </body>
