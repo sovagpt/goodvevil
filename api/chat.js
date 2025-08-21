@@ -88,7 +88,7 @@ Keep responses under 150 words. Be intellectually ruthless while staying logical
         'X-Title': 'AI Good vs Evil Chat'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'anthropic/claude-3.5-sonnet',
         messages: messages,
         max_tokens: 200,
         temperature: 0.7,
