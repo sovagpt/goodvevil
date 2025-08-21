@@ -165,11 +165,12 @@
         .social-button {
             width: 48px;
             height: 48px;
-            border-radius: 50%;
             transition: all 0.3s ease;
             border: 2px solid rgba(255, 255, 255, 0.3);
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
+            border-radius: 8px;
+            object-fit: contain;
         }
         
         .social-button:hover {
@@ -418,12 +419,12 @@
                 connectionStatus.textContent = 'CONNECTED';
             });
             
-            // Listen for allegiance votes
-            const allegianceRef = ref(database, 'allegiances');
-            onValue(allegianceRef, (snapshot) => {
+            // Listen for soul votes (changed from allegiances)
+            const soulsRef = ref(database, 'souls');
+            onValue(soulsRef, (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    updateAllegianceCounts(data);
+                    updateSoulCounts(data);
                 }
             });
             
@@ -476,10 +477,10 @@
             });
         }
 
-        // Update allegiance counts display
-        function updateAllegianceCounts(allegianceData) {
-            const goodCount = allegianceData.good || 0;
-            const evilCount = allegianceData.evil || 0;
+        // Update soul counts display (changed from allegiance)
+        function updateSoulCounts(soulData) {
+            const goodCount = soulData.good || 0;
+            const evilCount = soulData.evil || 0;
             
             goodCountEl.textContent = goodCount;
             evilCountEl.textContent = evilCount;
@@ -509,7 +510,7 @@
                 return;
             }
 
-            console.log('Attempting to join', side, 'allegiance for IP:', userIP);
+            console.log('Attempting to join', side, 'side for IP:', userIP);
 
             try {
                 const { database, ref, push, set, get } = window.firebase;
@@ -523,19 +524,19 @@
                     encodedIP: userIP
                 });
 
-                // Update allegiance count
-                console.log('Updating allegiance count...');
-                const allegianceRef = ref(database, `allegiances/${side}`);
-                const snapshot = await get(allegianceRef);
+                // Update soul count (changed from allegiance)
+                console.log('Updating soul count...');
+                const soulRef = ref(database, `souls/${side}`);
+                const snapshot = await get(soulRef);
                 const currentCount = snapshot.val() || 0;
-                await set(allegianceRef, currentCount + 1);
+                await set(soulRef, currentCount + 1);
 
                 // Add vote announcement to chat
                 console.log('Adding vote announcement...');
                 const voteMessage = {
                     type: 'user',
                     speaker: 'SYSTEM',
-                    content: `A new soul has joined the ${side.toUpperCase()} allegiance! The eternal war continues...`,
+                    content: `A new soul has joined the ${side.toUpperCase()} side! The eternal war continues...`,
                     timestamp: Date.now()
                 };
                 
@@ -545,11 +546,11 @@
                 hasVoted = true;
                 disableVotingButtons();
                 
-                console.log(`Successfully joined ${side} allegiance!`);
-                alert(`Successfully joined the ${side.toUpperCase()} allegiance!`);
+                console.log(`Successfully joined ${side} side!`);
+                alert(`Your soul now belongs to ${side.toUpperCase()}!`);
                 
             } catch (error) {
-                console.error('Error joining allegiance:', error);
+                console.error('Error joining side:', error);
                 alert('Error recording your vote. Please try again.');
             }
         }
