@@ -152,8 +152,30 @@
             border-radius: 4px;
         }
         
-        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-            background: #888;
+        .social-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            z-index: 20;
+        }
+        
+        .social-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .social-button:hover {
+            transform: scale(1.1);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
         }
         
         .status-bar {
@@ -237,7 +259,7 @@
             <!-- Good Vote Count -->
             <div class="mb-4 text-center">
                 <div class="text-blue-400 font-bold text-lg" id="good-count">0</div>
-                <div class="text-blue-300 text-xs">ALLEGIANCES</div>
+                <div class="text-blue-300 text-xs">SOULS</div>
             </div>
             
             <div id="good-model-container" class="w-96 h-96 mb-4">
@@ -268,7 +290,7 @@
             <!-- Evil Vote Count -->
             <div class="mb-4 text-center">
                 <div class="text-red-400 font-bold text-lg" id="evil-count">0</div>
-                <div class="text-red-300 text-xs">ALLEGIANCES</div>
+                <div class="text-red-300 text-xs">SOULS</div>
             </div>
             
             <div id="evil-model-container" class="w-96 h-96 mb-4">
@@ -322,6 +344,24 @@
                 Press ENTER to send • Max 200 characters
             </div>
         </div>
+    </div>
+    
+    <!-- Social Buttons -->
+    <div class="social-buttons">
+        <a href="https://x.com" target="_blank" rel="noopener noreferrer" title="Follow us on X">
+            <img 
+                src="https://cdn.prod.website-files.com/6740d85c4e3daeef29a89470/68a663251731174a3dc255f1_689178ebf786d570b0c29520_tw%20(1).png" 
+                alt="X (Twitter)" 
+                class="social-button"
+            />
+        </a>
+        <a href="https://heaven.xyz" target="_blank" rel="noopener noreferrer" title="Visit Heaven.xyz">
+            <img 
+                src="https://cdn.prod.website-files.com/6740d85c4e3daeef29a89470/68a6632603f1afdfc2473bb6_689178ebf786d570b0c29520_tw.gif" 
+                alt="Heaven.xyz" 
+                class="social-button"
+            />
+        </a>
     </div>
 
     <script>
