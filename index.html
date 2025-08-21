@@ -298,6 +298,15 @@
     <!-- Good Character (Left Side) -->
     <div class="character-container good-character">
         <div class="flex flex-col items-center">
+            <!-- Join Good Button -->
+            <button 
+                id="join-good-btn"
+                class="mb-4 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm border-2 border-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                onclick="joinAllegiance('good')"
+            >
+                JOIN GOOD
+            </button>
+            
             <!-- Good Soul Count -->
             <div class="mb-4 text-center">
                 <div class="text-blue-400 font-bold text-lg" id="good-count">0</div>
@@ -320,6 +329,15 @@
     <!-- Evil Character (Right Side) -->
     <div class="character-container evil-character">
         <div class="flex flex-col items-center">
+            <!-- Join Evil Button -->
+            <button 
+                id="join-evil-btn"
+                class="mb-4 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm border-2 border-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                onclick="joinAllegiance('evil')"
+            >
+                JOIN EVIL
+            </button>
+            
             <!-- Evil Soul Count -->
             <div class="mb-4 text-center">
                 <div class="text-red-400 font-bold text-lg" id="evil-count">0</div>
@@ -437,6 +455,8 @@
         let userConversation = [];
         let sessionId = null;
         let userMessageCount = 0;
+        let userIP = null;
+        let hasVoted = false;
 
         // DOM elements
         const messagesContainer = document.getElementById('messages-container');
@@ -453,6 +473,8 @@
         const personalChatEl = document.getElementById('personal-chat');
         const archivesViewEl = document.getElementById('archives-view');
         const archivesContainer = document.getElementById('archives-container');
+        const joinGoodBtn = document.getElementById('join-good-btn');
+        const joinEvilBtn = document.getElementById('join-evil-btn');
 
         // Initialize session
         function initSession() {
@@ -470,8 +492,116 @@
             loadSoulCounts();
             loadArchiveStats();
             
+            // Get user IP for voting
+            getUserIP();
+            
             console.log('Session initialized:', sessionId);
         }
+
+        // Get user IP address for voting restriction
+        async function getUserIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                userIP = data.ip.replace(/\./g, '_'); // Replace dots with underscores for Firebase
+                console.log('User IP (encoded):', userIP);
+                checkIfUserVoted();
+            } catch (error) {
+                console.error('Error getting IP:', error);
+                // Fallback to random ID if IP service fails
+                userIP = 'user_' + Math.random().toString(36).substr(2, 9);
+                checkIfUserVoted();
+            }
+        }
+
+        // Check if user has already voted
+        function checkIfUserVoted() {
+            if (typeof window.firebase === 'undefined') return;
+            
+            const { database, ref, onValue } = window.firebase;
+            const votersRef = ref(database, 'voters');
+            
+            onValue(votersRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data && data[userIP]) {
+                    hasVoted = true;
+                    disableVotingButtons();
+                    console.log('User has already voted for:', data[userIP].side);
+                } else {
+                    hasVoted = false;
+                    enableVotingButtons();
+                    console.log('User has not voted yet');
+                }
+            });
+        }
+
+        // Join allegiance function
+        async function joinAllegiance(side) {
+            if (!userIP || hasVoted) {
+                alert('You have already voted or there was an error getting your IP address.');
+                return;
+            }
+
+            if (typeof window.firebase === 'undefined') {
+                alert('Firebase not available - voting disabled in demo mode');
+                return;
+            }
+
+            console.log('Attempting to join', side, 'side for IP:', userIP);
+
+            try {
+                const { database, ref, push, set, get } = window.firebase;
+                
+                // Record the vote with encoded IP
+                const votersRef = ref(database, `voters/${userIP}`);
+                console.log('Setting voter data...');
+                await set(votersRef, {
+                    side: side,
+                    timestamp: Date.now(),
+                    encodedIP: userIP
+                });
+
+                // Update soul count
+                console.log('Updating soul count...');
+                const soulRef = ref(database, `souls/${side}`);
+                const snapshot = await get(soulRef);
+                const currentCount = snapshot.val() || 0;
+                await set(soulRef, currentCount + 1);
+
+                hasVoted = true;
+                disableVotingButtons();
+                
+                console.log(`Successfully joined ${side} side!`);
+                alert(`Your soul now belongs to ${side.toUpperCase()}!`);
+                
+            } catch (error) {
+                console.error('Error joining side:', error);
+                alert('Error recording your vote. Please try again.');
+            }
+        }
+
+        // Disable voting buttons after voting
+        function disableVotingButtons() {
+            if (joinGoodBtn && joinEvilBtn) {
+                joinGoodBtn.disabled = true;
+                joinEvilBtn.disabled = true;
+                joinGoodBtn.textContent = 'VOTED';
+                joinEvilBtn.textContent = 'VOTED';
+            }
+        }
+
+        // Enable voting buttons
+        function enableVotingButtons() {
+            if (joinGoodBtn && joinEvilBtn) {
+                joinGoodBtn.disabled = false;
+                joinEvilBtn.disabled = false;
+                joinGoodBtn.textContent = 'JOIN GOOD';
+                joinEvilBtn.textContent = 'JOIN EVIL';
+            }
+        }
+
+        // Make joinAllegiance available globally
+        window.joinAllegiance = joinAllegiance;
 
         // Load soul counts from Firebase
         function loadSoulCounts() {
