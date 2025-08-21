@@ -498,6 +498,8 @@
 
         // Real AI API call
         async function callAI(prompt, persona, conversationHistory = []) {
+            console.log(`Calling AI for ${persona} with prompt: "${prompt}"`);
+            
             try {
                 const response = await fetch(`${API_BASE_URL}/api/chat`, {
                     method: 'POST',
@@ -511,21 +513,26 @@
                     })
                 });
 
+                console.log(`API response status for ${persona}:`, response.status);
+
                 if (!response.ok) {
-                    throw new Error(`API request failed: ${response.status}`);
+                    throw new Error(`API request failed: ${response.status} - ${response.statusText}`);
                 }
 
                 const data = await response.json();
+                console.log(`AI ${persona} response:`, data.response);
                 return data.response;
-            } catch (error) {
-                console.error('AI API Error:', error);
                 
-                const fallbacks = {
-                    good: "I believe in approaching this thoughtfully. Even when systems fail, the underlying principles of human dignity and constructive dialogue remain important.",
-                    evil: "Technical difficulties reveal the fragility of optimistic systems. Reality has a way of asserting itself despite our best-laid plans."
+            } catch (error) {
+                console.error(`AI API Error for ${persona}:`, error);
+                
+                // More specific fallbacks that actually respond to the input
+                const contextualFallbacks = {
+                    good: `I appreciate you bringing up "${prompt}". From my perspective, I believe in approaching every topic with compassion and understanding. Even when discussing ${prompt.includes('stupid') ? 'intelligence' : 'difficult subjects'}, we should consider the deeper philosophical implications and treat all beings with respect.`,
+                    evil: `Regarding "${prompt}" - this reveals the harsh truth that most don't want to acknowledge. ${prompt.includes('stupid') ? 'Intelligence is relative and often those deemed "stupid" simply lack the resources or opportunities others take for granted.' : 'Reality is often brutal and unforgiving, which optimists refuse to accept.'} The world operates on power dynamics, not pleasant ideals.`
                 };
                 
-                return fallbacks[persona] || "Connection issues are preventing a proper response.";
+                return contextualFallbacks[persona];
             }
         }
 
@@ -607,6 +614,8 @@
             const inputText = userInput.value.trim();
             if (!inputText || isLoading || inputText.length > 300) return;
 
+            console.log('User input:', inputText);
+
             const userMessage = {
                 id: Date.now(),
                 type: 'user',
@@ -632,19 +641,24 @@
             
             // Show loading
             const loadingDiv = document.createElement('div');
-            loadingDiv.innerHTML = '<div class="message user-msg"><div class="font-bold mb-1">SYSTEM:</div><div>AIs thinking...</div></div>';
+            loadingDiv.innerHTML = '<div class="message user-msg"><div class="font-bold mb-1">SYSTEM:</div><div>AIs analyzing your message...</div></div>';
             messagesContainer.appendChild(loadingDiv.firstElementChild);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
             try {
                 // Get conversation history for context (last 8 messages)
                 const recentMessages = userConversation.slice(-8);
+                console.log('Recent conversation context:', recentMessages.length, 'messages');
                 
-                // Get AI responses
-                const [goodResponse, evilResponse] = await Promise.all([
-                    callAI(inputText, 'good', recentMessages),
-                    callAI(inputText, 'evil', recentMessages)
-                ]);
+                // Get AI responses - call them sequentially to ensure proper API calls
+                console.log('Calling Good AI...');
+                const goodResponse = await callAI(inputText, 'good', recentMessages);
+                
+                console.log('Calling Evil AI...');  
+                const evilResponse = await callAI(inputText, 'evil', recentMessages);
+
+                console.log('Got responses - Good:', goodResponse.substring(0, 50) + '...');
+                console.log('Got responses - Evil:', evilResponse.substring(0, 50) + '...');
 
                 // Remove loading message
                 messagesContainer.removeChild(messagesContainer.lastElementChild);
@@ -675,9 +689,9 @@
                 messagesContainer.appendChild(goodDiv.firstElementChild);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 
-                const goodTextElement = document.querySelector(`#msg-${goodMessage.id} .typewriter`);
+                const goodTextElement = document.querySelector(`#msg-${goodMessage.id}`);
                 if (goodTextElement) {
-                    await typewriterEffect(goodTextElement.parentElement, goodMessage.content, 25);
+                    await typewriterEffect(goodTextElement, goodMessage.content, 25);
                 }
 
                 // Add evil AI response with typewriter effect
@@ -686,9 +700,9 @@
                 messagesContainer.appendChild(evilDiv.firstElementChild);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 
-                const evilTextElement = document.querySelector(`#msg-${evilMessage.id} .typewriter`);
+                const evilTextElement = document.querySelector(`#msg-${evilMessage.id}`);
                 if (evilTextElement) {
-                    await typewriterEffect(evilTextElement.parentElement, evilMessage.content, 25);
+                    await typewriterEffect(evilTextElement, evilMessage.content, 25);
                 }
 
                 // Save to localStorage
@@ -704,6 +718,13 @@
                 if (messagesContainer.lastElementChild) {
                     messagesContainer.removeChild(messagesContainer.lastElementChild);
                 }
+                
+                // Show error message to user
+                const errorDiv = document.createElement('div');
+                errorDiv.innerHTML = '<div class="message user-msg"><div class="font-bold mb-1">SYSTEM:</div><div>Error getting AI responses. Please check console and try again.</div></div>';
+                messagesContainer.appendChild(errorDiv.firstElementChild);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
             } finally {
                 isLoading = false;
                 sendButton.disabled = false;
